@@ -1,25 +1,20 @@
-# Monkey interpreter
+# Monkey compiler
 
-[![wercker status](https://app.wercker.com/status/20b05c4eb17fc957ff322da01bb157fc/s/master "wercker status")](https://app.wercker.com/project/byKey/20b05c4eb17fc957ff322da01bb157fc)
-[![Go Report Card](https://goreportcard.com/badge/github.com/skatsuta/monkey-interpreter)](https://goreportcard.com/report/github.com/skatsuta/monkey-interpreter)
-[![GoDoc](https://godoc.org/github.com/skatsuta/monkey-interpreter?status.svg)](https://godoc.org/github.com/skatsuta/monkey-interpreter)
-
-
-Monkey programming language interpreter designed in [_Writing An Interpreter In Go_](https://interpreterbook.com/).
+Monkey programming language compiler designed in [_Writing An Compiler In Go_](https://https://compilerbook.com/).
 
 
 ## Usage
 
-Install the Monkey interpreter using `go get`:
+Install the Monkey compiler using `go get`:
 
 ```sh
-$ go get -v -u github.com/skatsuta/monkey-interpreter/...
+$ go get -v -u github.com/skatsuta/monkey-compiler/...
 ```
 
 Then run REPL:
 
 ```sh
-$ $GOPATH/bin/monkey-interpreter
+$ $GOPATH/bin/monkey-compiler
 This is the Monkey programming language!
 Feel free to type in commands
 >> 
@@ -28,7 +23,7 @@ Feel free to type in commands
 Or run a Monkey script file (for example `script.monkey` file):
 
 ```sh
-$ $GOPATH/bin/monkey-interpreter script.monkey
+$ $GOPATH/bin/monkey-compiler script.monkey
 ```
 
 ## Getting started with Monkey
