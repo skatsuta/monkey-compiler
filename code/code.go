@@ -1,6 +1,9 @@
 package code
 
-import "fmt"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 // Instructions represents a sequence of instructions.
 type Instructions []byte
@@ -35,4 +38,32 @@ func Lookup(op byte) (*Definition, error) {
 		return nil, fmt.Errorf("opcode %d undefined", op)
 	}
 	return def, nil
+}
+
+// Make makes a bytecode instruction sequence from an opcode and operands.
+func Make(op Opcode, operands ...int) []byte {
+	def, ok := definitions[op]
+	if !ok {
+		return nil
+	}
+
+	insnLen := 1
+	for _, w := range def.OperandWidths {
+		insnLen += w
+	}
+
+	insn := make([]byte, insnLen)
+	insn[0] = op.Byte()
+
+	offset := 1
+	for i, o := range operands {
+		width := def.OperandWidths[i]
+		switch width {
+		case 2: // 2 bytes
+			binary.BigEndian.PutUint16(insn[offset:], uint16(o))
+		}
+		offset += width
+	}
+
+	return insn
 }
