@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/skatsuta/monkey-interpreter/ast"
-	"github.com/skatsuta/monkey-interpreter/lexer"
+	"github.com/skatsuta/monkey-compiler/ast"
+	"github.com/skatsuta/monkey-compiler/lexer"
 )
 
 func TestLetStatements(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/skatsuta/monkey-interpreter/ast"
-	"github.com/skatsuta/monkey-interpreter/lexer"
-	"github.com/skatsuta/monkey-interpreter/token"
+	"github.com/skatsuta/monkey-compiler/ast"
+	"github.com/skatsuta/monkey-compiler/lexer"
+	"github.com/skatsuta/monkey-compiler/token"
 )
 
 const (

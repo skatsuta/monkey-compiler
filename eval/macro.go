@@ -1,8 +1,8 @@
 package eval
 
 import (
-	"github.com/skatsuta/monkey-interpreter/ast"
-	"github.com/skatsuta/monkey-interpreter/object"
+	"github.com/skatsuta/monkey-compiler/ast"
+	"github.com/skatsuta/monkey-compiler/object"
 )
 
 // DefineMacros finds macro definitions in the program, saves them to a given environment and

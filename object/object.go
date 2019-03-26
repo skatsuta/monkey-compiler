@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/skatsuta/monkey-interpreter/ast"
+	"github.com/skatsuta/monkey-compiler/ast"
 )
 
 // Type is a type of objects.
