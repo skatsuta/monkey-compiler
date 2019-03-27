@@ -40,6 +40,13 @@ func (vm *VM) StackTop() object.Object {
 	return vm.stack[vm.sp-1]
 }
 
+// LastPoppedStackElem returns an object which was popped from the top of the stack
+// most recently.
+func (vm *VM) LastPoppedStackElem() object.Object {
+	// vm.sp always points to the *next free* slot in vm.stack
+	return vm.stack[vm.sp]
+}
+
 // Run executes bytecode instructions.
 func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.insns); ip++ {
@@ -61,6 +68,9 @@ func (vm *VM) Run() error {
 			right := vm.pop().(*object.Integer).Value
 			left := vm.pop().(*object.Integer).Value
 			vm.push(&object.Integer{Value: left + right})
+
+		case code.OpPop:
+			vm.pop()
 		}
 	}
 

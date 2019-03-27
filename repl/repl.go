@@ -54,13 +54,13 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		stackTop := machine.StackTop()
-		if stackTop == nil {
+		lastPopped := machine.LastPoppedStackElem()
+		if lastPopped == nil {
 			io.WriteString(out, "no object at top of stack\n")
 			continue
 		}
 
-		io.WriteString(out, stackTop.Inspect())
+		io.WriteString(out, lastPopped.Inspect())
 		io.WriteString(out, "\n")
 	}
 }
