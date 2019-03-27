@@ -24,6 +24,7 @@ type Definition struct {
 
 var definitions = map[Opcode]*Definition{
 	OpConstant: {Name: "OpConstant", OperandWidths: []int{2}},
+	OpAdd:      {Name: "OpAdd", OperandWidths: []int{}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
@@ -67,11 +68,13 @@ func (insns Instructions) formatInstruction(def *Definition, operands []int) str
 	}
 
 	switch operandCount {
+	case 0:
+		return def.Name
 	case 1:
 		return fmt.Sprintf("%s 0x%X", def.Name, operands[0])
 	}
 
-	return fmt.Sprintf("ERROR: unhandled operand width for %s: %d\n", def.Name, operandCount)
+	return fmt.Sprintf("ERROR: unhandled operand width for %s: %d", def.Name, operandCount)
 }
 
 // Make makes a bytecode instruction sequence from an opcode and operands.

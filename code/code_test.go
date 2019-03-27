@@ -7,14 +7,14 @@ import (
 
 func TestInstructionsString(t *testing.T) {
 	insns := []Instructions{
-		Make(OpConstant, 0x1),
+		Make(OpAdd),
 		Make(OpConstant, 0x2),
 		Make(OpConstant, 0xFF),
 	}
 
-	want := `0000 OpConstant 0x1
-0003 OpConstant 0x2
-0006 OpConstant 0xFF
+	want := `0000 OpAdd
+0001 OpConstant 0x2
+0004 OpConstant 0xFF
 `
 
 	concat := make(Instructions, 0, len(insns))
@@ -36,6 +36,7 @@ func TestMake(t *testing.T) {
 		want     []byte
 	}{
 		{OpConstant, []int{65534}, []byte{byte(OpConstant), 255, 254}},
+		{OpAdd, []int{}, []byte{byte(OpAdd)}},
 	}
 
 	for _, tt := range tests {
