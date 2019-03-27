@@ -10,12 +10,18 @@ import (
 type Opcode byte
 
 const (
-	// OpConstant represents an opcode which pushes a constant value on to a call stack.
+	// OpConstant is an opcode which pushes a constant value on to a call stack.
 	OpConstant Opcode = iota
-	// OpAdd represents an opcode for integer addition.
-	OpAdd
-	// OpPop represents an opcode which pops a value from a call stack.
+	// OpPop is an opcode which pops a value from a call stack.
 	OpPop
+	// OpAdd is an opcode for addition (+).
+	OpAdd
+	// OpSub is an opcode for subtraction (-).
+	OpSub
+	// OpMul is an opcode for multiplication (*).
+	OpMul
+	// OpDiv is an opcode for division (/).
+	OpDiv
 )
 
 // Definition represents the definition of an opcode.
@@ -26,8 +32,11 @@ type Definition struct {
 
 var definitions = map[Opcode]*Definition{
 	OpConstant: {Name: "OpConstant", OperandWidths: []int{2}},
-	OpAdd:      {Name: "OpAdd", OperandWidths: nil},
 	OpPop:      {Name: "OpPop", OperandWidths: nil},
+	OpAdd:      {Name: "OpAdd", OperandWidths: nil},
+	OpSub:      {Name: "OpSub", OperandWidths: nil},
+	OpMul:      {Name: "OpMul", OperandWidths: nil},
+	OpDiv:      {Name: "OpDiv", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

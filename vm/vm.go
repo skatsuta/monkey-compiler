@@ -2,6 +2,7 @@ package vm
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/skatsuta/monkey-compiler/code"
 	"github.com/skatsuta/monkey-compiler/compiler"
@@ -64,13 +65,13 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpAdd:
-			right := vm.pop().(*object.Integer).Value
-			left := vm.pop().(*object.Integer).Value
-			vm.push(&object.Integer{Value: left + right})
-
 		case code.OpPop:
 			vm.pop()
+
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			if err := vm.execBinaryOp(op); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -101,4 +102,37 @@ func (vm *VM) pop() object.Object {
 	vm.sp--
 
 	return obj
+}
+
+func (vm *VM) execBinaryOp(op code.Opcode) error {
+	right, left := vm.pop(), vm.pop()
+
+	leftType, rightType := left.Type(), right.Type()
+
+	if leftType == object.IntegerType && rightType == object.IntegerType {
+		return vm.execBinaryIntOp(op, left, right)
+	}
+
+	return fmt.Errorf("unsupported types for binary operation: %s and %s", leftType, rightType)
+}
+
+func (vm *VM) execBinaryIntOp(op code.Opcode, left, right object.Object) error {
+	leftVal, rightVal := left.(*object.Integer).Value, right.(*object.Integer).Value
+
+	var result int64
+
+	switch op {
+	case code.OpAdd:
+		result = leftVal + rightVal
+	case code.OpSub:
+		result = leftVal - rightVal
+	case code.OpMul:
+		result = leftVal * rightVal
+	case code.OpDiv:
+		result = leftVal / rightVal
+	default:
+		return fmt.Errorf("unknown integer operator: %d", op)
+	}
+
+	return vm.push(&object.Integer{Value: result})
 }
