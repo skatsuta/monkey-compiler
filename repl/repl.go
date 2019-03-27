@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/skatsuta/monkey-compiler/compiler"
 	"github.com/skatsuta/monkey-compiler/eval"
 	"github.com/skatsuta/monkey-compiler/lexer"
 	"github.com/skatsuta/monkey-compiler/object"
 	"github.com/skatsuta/monkey-compiler/parser"
+	"github.com/skatsuta/monkey-compiler/vm"
 )
 
 const prompt = ">> "
@@ -16,7 +18,6 @@ const prompt = ">> "
 // Start starts Monkey REPL.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
 
 	for {
@@ -39,13 +40,27 @@ func Start(in io.Reader, out io.Writer) {
 		eval.DefineMacros(program, macroEnv)
 		expanded := eval.ExpandMacros(program, macroEnv)
 
-		// Evaluate AST
-		evaluated := eval.Eval(expanded, env)
-		if evaluated == nil {
+		// Compile the AST to bytecode
+		complr := compiler.New()
+		if err := complr.Compile(expanded); err != nil {
+			fmt.Fprintf(out, "Woops! Compilation failed: %s\n", err)
 			continue
 		}
 
-		io.WriteString(out, evaluated.Inspect())
+		// Run bytecode instructions
+		machine := vm.New(complr.Bytecode())
+		if err := machine.Run(); err != nil {
+			fmt.Fprintf(out, "Woops! Executing bytecode failed: %s\n", err)
+			continue
+		}
+
+		stackTop := machine.StackTop()
+		if stackTop == nil {
+			io.WriteString(out, "no object at top of stack\n")
+			continue
+		}
+
+		io.WriteString(out, stackTop.Inspect())
 		io.WriteString(out, "\n")
 	}
 }
