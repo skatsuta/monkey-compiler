@@ -35,7 +35,7 @@ func TestMake(t *testing.T) {
 		operands []int
 		want     []byte
 	}{
-		{OpConstant, []int{65534}, []byte{OpConstant.Byte(), 255, 254}},
+		{OpConstant, []int{65534}, []byte{byte(OpConstant), 255, 254}},
 	}
 
 	for _, tt := range tests {
@@ -62,7 +62,7 @@ func TestReadOperands(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		b := tt.op.Byte()
+		b := byte(tt.op)
 		def, err := Lookup(b)
 		if err != nil {
 			t.Fatalf("definition for byte %x not found: %s", b, err)

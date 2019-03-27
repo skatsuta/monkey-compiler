@@ -9,14 +9,11 @@ import (
 // Opcode represents an opcode.
 type Opcode byte
 
-// Byte returns the corresponding byte of the opcode `op`.
-func (op Opcode) Byte() byte {
-	return byte(op)
-}
-
 const (
 	// OpConstant represents an opcode which pushes a constant value on to the stack.
 	OpConstant Opcode = iota
+	// OpAdd represents an opcode for integer addition.
+	OpAdd
 )
 
 // Definition represents the definition of an opcode.
@@ -90,7 +87,7 @@ func Make(op Opcode, operands ...int) []byte {
 	}
 
 	insn := make([]byte, insnLen)
-	insn[0] = op.Byte()
+	insn[0] = byte(op)
 
 	offset := 1
 	for i, o := range operands {
