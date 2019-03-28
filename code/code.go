@@ -26,6 +26,12 @@ const (
 	OpTrue
 	// OpFalse is an opcode to push `false` value on to the stack.
 	OpFalse
+	// OpEqual is an opcode to check the equality of the two topmost elements on the stack.
+	OpEqual
+	// OpNotEqual is an opcode to check the inequality of the two topmost elements on the stack.
+	OpNotEqual
+	// OpGreaterThan is an opcode to check the second topmost element is greater than the first.
+	OpGreaterThan
 )
 
 // Definition represents the definition of an opcode.
@@ -35,14 +41,17 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant: {Name: "OpConstant", OperandWidths: []int{2}},
-	OpPop:      {Name: "OpPop", OperandWidths: nil},
-	OpAdd:      {Name: "OpAdd", OperandWidths: nil},
-	OpSub:      {Name: "OpSub", OperandWidths: nil},
-	OpMul:      {Name: "OpMul", OperandWidths: nil},
-	OpDiv:      {Name: "OpDiv", OperandWidths: nil},
+	OpConstant:    {Name: "OpConstant", OperandWidths: []int{2}},
+	OpPop:         {Name: "OpPop", OperandWidths: nil},
+	OpAdd:         {Name: "OpAdd", OperandWidths: nil},
+	OpSub:         {Name: "OpSub", OperandWidths: nil},
+	OpMul:         {Name: "OpMul", OperandWidths: nil},
+	OpDiv:         {Name: "OpDiv", OperandWidths: nil},
 	OpTrue:        {Name: "OpTrue", OperandWidths: nil},
 	OpFalse:       {Name: "OpFalse", OperandWidths: nil},
+	OpEqual:       {Name: "OpEqual", OperandWidths: nil},
+	OpNotEqual:    {Name: "OpNotEqual", OperandWidths: nil},
+	OpGreaterThan: {Name: "OpGreaterThan", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

@@ -42,6 +42,20 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpPop)
 
 	case *ast.InfixExpression:
+		// Reverse the two operands if the operator is "<" (less than)
+		if node.Operator == "<" {
+			if err := c.Compile(node.Right); err != nil {
+				return err
+			}
+
+			if err := c.Compile(node.Left); err != nil {
+				return err
+			}
+
+			c.emit(code.OpGreaterThan)
+			return nil
+		}
+
 		if err := c.Compile(node.Left); err != nil {
 			return err
 		}
@@ -59,6 +73,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpMul)
 		case "/":
 			c.emit(code.OpDiv)
+		case ">":
+			c.emit(code.OpGreaterThan)
+		case "==":
+			c.emit(code.OpEqual)
+		case "!=":
+			c.emit(code.OpNotEqual)
 		default:
 			return fmt.Errorf("unknown operator: %s", node.Operator)
 		}
