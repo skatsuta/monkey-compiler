@@ -41,6 +41,20 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpPop)
 
+	case *ast.PrefixExpression:
+		if err := c.Compile(node.Right); err != nil {
+			return nil
+		}
+
+		switch node.Operator {
+		case "!":
+			c.emit(code.OpBang)
+		case "-":
+			c.emit(code.OpMinus)
+		default:
+			return fmt.Errorf("unknown unary operator: %s", node.Operator)
+		}
+
 	case *ast.InfixExpression:
 		// Reverse the two operands if the operator is "<" (less than)
 		if node.Operator == "<" {

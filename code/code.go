@@ -32,6 +32,10 @@ const (
 	OpNotEqual
 	// OpGreaterThan is an opcode to check the second topmost element is greater than the first.
 	OpGreaterThan
+	// OpMinus is an opcode to negate integers.
+	OpMinus
+	// OpBang is an opcode to negate booleans.
+	OpBang
 )
 
 // Definition represents the definition of an opcode.
@@ -52,6 +56,8 @@ var definitions = map[Opcode]*Definition{
 	OpEqual:       {Name: "OpEqual", OperandWidths: nil},
 	OpNotEqual:    {Name: "OpNotEqual", OperandWidths: nil},
 	OpGreaterThan: {Name: "OpGreaterThan", OperandWidths: nil},
+	OpMinus:       {Name: "OpMinus", OperandWidths: nil},
+	OpBang:        {Name: "OpBang", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
