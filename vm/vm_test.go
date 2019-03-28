@@ -35,6 +35,15 @@ type vmTestCase struct {
 	want  interface{}
 }
 
+func TestBooleanExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"true", true},
+		{"false", false},
+	}
+
+	runVMTests(t, tests)
+}
+
 func runVMTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -65,11 +74,30 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 	t.Helper()
 
 	switch want := want.(type) {
+	case bool:
+		if err := testBooleanObject(bool(want), got); err != nil {
+			t.Errorf("testBooleanObject failed: %s", err)
+		}
 	case int:
 		if err := testIntegerObject(int64(want), got); err != nil {
 			t.Errorf("testIntegerObject failed: %s", err)
 		}
+	default:
+		t.Errorf("testExpectedObject failed: unknown type %T (%#v)", got, got)
 	}
+}
+
+func testBooleanObject(want bool, got object.Object) error {
+	result, ok := got.(*object.Boolean)
+	if !ok {
+		return fmt.Errorf("object is not Boolean. got=%T (%#v)", got, got)
+	}
+
+	if result.Value != want {
+		return fmt.Errorf("object has wrong value. want=%t, got=%t", want, result.Value)
+	}
+
+	return nil
 }
 
 func testIntegerObject(want int64, got object.Object) error {

@@ -10,9 +10,9 @@ import (
 type Opcode byte
 
 const (
-	// OpConstant is an opcode which pushes a constant value on to a call stack.
+	// OpConstant is an opcode to push a constant value on to the stack.
 	OpConstant Opcode = iota
-	// OpPop is an opcode which pops a value from a call stack.
+	// OpPop is an opcode to pop the topmost element off the stack.
 	OpPop
 	// OpAdd is an opcode for addition (+).
 	OpAdd
@@ -22,6 +22,10 @@ const (
 	OpMul
 	// OpDiv is an opcode for division (/).
 	OpDiv
+	// OpTrue is an opcode to push `true` value on to the stack.
+	OpTrue
+	// OpFalse is an opcode to push `false` value on to the stack.
+	OpFalse
 )
 
 // Definition represents the definition of an opcode.
@@ -37,6 +41,8 @@ var definitions = map[Opcode]*Definition{
 	OpSub:      {Name: "OpSub", OperandWidths: nil},
 	OpMul:      {Name: "OpMul", OperandWidths: nil},
 	OpDiv:      {Name: "OpDiv", OperandWidths: nil},
+	OpTrue:        {Name: "OpTrue", OperandWidths: nil},
+	OpFalse:       {Name: "OpFalse", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

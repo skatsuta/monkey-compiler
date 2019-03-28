@@ -12,6 +12,13 @@ import (
 // StackSize is an initial stack size.
 const StackSize = 2048
 
+var (
+	// True is the boolean `true` value.
+	True = &object.Boolean{Value: true}
+	// False is the boolean `false` value.
+	False = &object.Boolean{Value: false}
+)
+
 // VM is a virtual machine which interprets and executes bytecode instructions.
 type VM struct {
 	consts []object.Object
@@ -62,6 +69,16 @@ func (vm *VM) Run() error {
 			ip += 2
 
 			if err := vm.push(vm.consts[constIdx]); err != nil {
+				return err
+			}
+
+		case code.OpTrue:
+			if err := vm.push(True); err != nil {
+				return err
+			}
+
+		case code.OpFalse:
+			if err := vm.push(False); err != nil {
 				return err
 			}
 
