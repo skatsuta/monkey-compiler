@@ -40,7 +40,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 	}
 }
 
-// StackTop returns an object at the top of stack.
+// StackTop returns an object on top of the stack.
 func (vm *VM) StackTop() object.Object {
 	if vm.sp == 0 {
 		return nil
@@ -48,8 +48,7 @@ func (vm *VM) StackTop() object.Object {
 	return vm.stack[vm.sp-1]
 }
 
-// LastPoppedStackElem returns an object which was popped from the top of the stack
-// most recently.
+// LastPoppedStackElem returns an object which was popped off the stack most recently.
 func (vm *VM) LastPoppedStackElem() object.Object {
 	// vm.sp always points to the *next free* slot in vm.stack
 	return vm.stack[vm.sp]
@@ -115,7 +114,7 @@ func (vm *VM) push(obj object.Object) error {
 		return errors.New("stack overflow")
 	}
 
-	// Push the object to the top of stack
+	// Push the object on to the stack
 	vm.stack[vm.sp] = obj
 	// Increment the stack pointer
 	vm.sp++
@@ -128,7 +127,7 @@ func (vm *VM) pop() object.Object {
 		return nil
 	}
 
-	// Pop an object at the top of stack
+	// Pop an object off the stack
 	obj := vm.stack[vm.sp-1]
 	// Decrement the stack pointer
 	vm.sp--
