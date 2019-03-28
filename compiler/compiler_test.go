@@ -175,6 +175,57 @@ func TestBooleanExpressions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestConditionals(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input:      `if (true) { 10 }; 3333;`,
+			wantConsts: []interface{}{10, 3333},
+			wantInsns: []code.Instructions{
+				// 0000
+				code.Make(code.OpTrue),
+				// 0001
+				code.Make(code.OpJumpNotTruthy, 10),
+				// 0004
+				code.Make(code.OpConstant, 0),
+				// 0007
+				code.Make(code.OpJump, 11),
+				// 0010
+				code.Make(code.OpNil),
+				// 0011
+				code.Make(code.OpPop),
+				// 0012
+				code.Make(code.OpConstant, 1),
+				// 0015
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      `if (true) { 10 } else { 20 }; 3333;`,
+			wantConsts: []interface{}{10, 20, 3333},
+			wantInsns: []code.Instructions{
+				// 0000
+				code.Make(code.OpTrue),
+				// 0001
+				code.Make(code.OpJumpNotTruthy, 10),
+				// 0004
+				code.Make(code.OpConstant, 0),
+				// 0007
+				code.Make(code.OpJump, 13),
+				// 0010
+				code.Make(code.OpConstant, 1),
+				// 0013
+				code.Make(code.OpPop),
+				// 0014
+				code.Make(code.OpConstant, 2),
+				// 0017
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
@@ -211,7 +262,7 @@ func testInstructions(want []code.Instructions, got code.Instructions) error {
 
 	for i, insn := range concat {
 		if got[i] != insn {
-			return fmt.Errorf("wrong instruction at pos %d.\nwant=%q\ngot=%q", i, concat, got)
+			return fmt.Errorf("wrong instruction at pos %d.\nwant:\n%s\ngot:\n%s", i, concat, got)
 		}
 	}
 

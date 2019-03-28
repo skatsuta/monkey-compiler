@@ -36,6 +36,12 @@ const (
 	OpMinus
 	// OpBang is an opcode to negate booleans.
 	OpBang
+	// OpJumpNotTruthy is an opcode to jump if the condition is not truthy.
+	OpJumpNotTruthy
+	// OpJump is an opcode to jump.
+	OpJump
+	// OpNil is an opcode to push `nil` value on to the stack.
+	OpNil
 )
 
 // Definition represents the definition of an opcode.
@@ -45,19 +51,22 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant:    {Name: "OpConstant", OperandWidths: []int{2}},
-	OpPop:         {Name: "OpPop", OperandWidths: nil},
-	OpAdd:         {Name: "OpAdd", OperandWidths: nil},
-	OpSub:         {Name: "OpSub", OperandWidths: nil},
-	OpMul:         {Name: "OpMul", OperandWidths: nil},
-	OpDiv:         {Name: "OpDiv", OperandWidths: nil},
-	OpTrue:        {Name: "OpTrue", OperandWidths: nil},
-	OpFalse:       {Name: "OpFalse", OperandWidths: nil},
-	OpEqual:       {Name: "OpEqual", OperandWidths: nil},
-	OpNotEqual:    {Name: "OpNotEqual", OperandWidths: nil},
-	OpGreaterThan: {Name: "OpGreaterThan", OperandWidths: nil},
-	OpMinus:       {Name: "OpMinus", OperandWidths: nil},
-	OpBang:        {Name: "OpBang", OperandWidths: nil},
+	OpConstant:      {Name: "OpConstant", OperandWidths: []int{2}},
+	OpPop:           {Name: "OpPop", OperandWidths: nil},
+	OpAdd:           {Name: "OpAdd", OperandWidths: nil},
+	OpSub:           {Name: "OpSub", OperandWidths: nil},
+	OpMul:           {Name: "OpMul", OperandWidths: nil},
+	OpDiv:           {Name: "OpDiv", OperandWidths: nil},
+	OpTrue:          {Name: "OpTrue", OperandWidths: nil},
+	OpFalse:         {Name: "OpFalse", OperandWidths: nil},
+	OpEqual:         {Name: "OpEqual", OperandWidths: nil},
+	OpNotEqual:      {Name: "OpNotEqual", OperandWidths: nil},
+	OpGreaterThan:   {Name: "OpGreaterThan", OperandWidths: nil},
+	OpMinus:         {Name: "OpMinus", OperandWidths: nil},
+	OpBang:          {Name: "OpBang", OperandWidths: nil},
+	OpJumpNotTruthy: {Name: "OpJumpNotTruthy", OperandWidths: []int{2}},
+	OpJump:          {Name: "OpJump", OperandWidths: []int{2}},
+	OpNil:           {Name: "OpNil", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

@@ -66,6 +66,24 @@ func TestBooleanExpressions(t *testing.T) {
 		{"!!true", true},
 		{"!!false", false},
 		{"!!5", true},
+		{"!(if (false) { 5 })", true},
+		{"if ((if (false) { 10 })) { 10 } else { 20 }", 20},
+	}
+
+	runVMTests(t, tests)
+}
+
+func TestConditionals(t *testing.T) {
+	tests := []vmTestCase{
+		{"if (true) { 10 }", 10},
+		{"if (true) { 10 } else { 20 }", 10},
+		{"if (false) { 10 } else { 20 }", 20},
+		{"if (1) { 10 }", 10},
+		{"if (1 < 2) { 10 }", 10},
+		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{"if (1 > 2) { 10 } else { 20 }", 20},
+		{"if (1 > 2) { 10 }", Nil},
+		{"if (false) { 10 }", Nil},
 	}
 
 	runVMTests(t, tests)
@@ -108,6 +126,10 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 	case int:
 		if err := testIntegerObject(int64(want), got); err != nil {
 			t.Errorf("testIntegerObject failed: %s", err)
+		}
+	case *object.Nil:
+		if got != Nil {
+			t.Errorf("object is not Nil: %T (%#v)", got, got)
 		}
 	default:
 		t.Errorf("testExpectedObject failed: unknown type %T (%#v)", got, got)

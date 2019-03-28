@@ -17,6 +17,8 @@ var (
 	True = &object.Boolean{Value: true}
 	// False is the boolean `false` value.
 	False = &object.Boolean{Value: false}
+	// Nil represents the zero value.
+	Nil = &object.Nil{}
 )
 
 // VM is a virtual machine which interprets and executes bytecode instructions.
@@ -81,6 +83,11 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpNil:
+			if err := vm.push(Nil); err != nil {
+				return err
+			}
+
 		case code.OpPop:
 			vm.pop()
 
@@ -102,6 +109,21 @@ func (vm *VM) Run() error {
 		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
 			if err := vm.execComparison(op); err != nil {
 				return err
+			}
+
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.insns[ip+1:]))
+			// Since we're in a loop that increments `ip` with each iteration, we need to set `ip`
+			// to the offset *right before the one* we want.
+			ip = pos - 1
+
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.insns[ip+1:]))
+			ip += 2
+
+			condition := vm.pop()
+			if !isTruthy(condition) {
+				ip = pos - 1
 			}
 		}
 	}
@@ -141,7 +163,7 @@ func (vm *VM) execBangOp() error {
 	switch operand {
 	case True:
 		return vm.push(False)
-	case False:
+	case False, Nil:
 		return vm.push(True)
 	default:
 		return vm.push(False)
@@ -236,4 +258,15 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 		return True
 	}
 	return False
+}
+
+func isTruthy(obj object.Object) bool {
+	switch obj := obj.(type) {
+	case *object.Boolean:
+		return obj.Value
+	case *object.Nil:
+		return false
+	default:
+		return true
+	}
 }
