@@ -22,13 +22,21 @@ type Compiler struct {
 	consts []object.Object
 
 	lastInsn, prevInsn EmittedInstruction
+
+	symTab *SymbolTable
 }
 
-// New returns a new Compiler.
+// New creates a new Compiler.
 func New() *Compiler {
+	return NewWithState(NewSymbolTable(), make([]object.Object, 0))
+}
+
+// NewWithState creates a new Compiler with a given symbol table and constant pool.
+func NewWithState(s *SymbolTable, consts []object.Object) *Compiler {
 	return &Compiler{
 		insns:  make(code.Instructions, 0),
-		consts: make([]object.Object, 0),
+		consts: consts,
+		symTab: s,
 	}
 }
 
@@ -48,6 +56,15 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 		}
+
+	case *ast.LetStatement:
+		// Compile the right-hand side expression
+		if err := c.Compile(node.Value); err != nil {
+			return err
+		}
+
+		sym := c.symTab.Define(node.Name.Value)
+		c.emit(code.OpSetGlobal, sym.Index)
 
 	case *ast.ExpressionStatement:
 		if err := c.Compile(node.Expression); err != nil {
@@ -148,6 +165,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		afterAlternativePos := len(c.insns)
 		c.changeOperand(jumpPos, afterAlternativePos)
+
+	case *ast.Ident:
+		sym, ok := c.symTab.Resolve(node.Value)
+		if !ok {
+			return fmt.Errorf("undefined variable %q", node.Value)
+		}
+
+		c.emit(code.OpGetGlobal, sym.Index)
 
 	case *ast.Boolean:
 		if node.Value {

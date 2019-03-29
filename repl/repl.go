@@ -18,7 +18,12 @@ const prompt = ">> "
 // Start starts Monkey REPL.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+
 	macroEnv := object.NewEnvironment()
+
+	symbolTable := compiler.NewSymbolTable()
+	constants := make([]object.Object, 0)
+	globals := make([]object.Object, vm.GlobalSize)
 
 	for {
 		fmt.Print(prompt)
@@ -41,14 +46,18 @@ func Start(in io.Reader, out io.Writer) {
 		expanded := eval.ExpandMacros(program, macroEnv)
 
 		// Compile the AST to bytecode
-		complr := compiler.New()
+		complr := compiler.NewWithState(symbolTable, constants)
 		if err := complr.Compile(expanded); err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed: %s\n", err)
 			continue
 		}
 
+		// Update constant pool
+		code := complr.Bytecode()
+		constants = code.Constants
+
 		// Run bytecode instructions
-		machine := vm.New(complr.Bytecode())
+		machine := vm.NewWithGlobalStore(code, globals)
 		if err := machine.Run(); err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed: %s\n", err)
 			continue

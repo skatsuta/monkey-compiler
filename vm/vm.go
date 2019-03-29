@@ -9,8 +9,13 @@ import (
 	"github.com/skatsuta/monkey-compiler/object"
 )
 
-// StackSize is an initial stack size.
-const StackSize = 2048
+const (
+	// StackSize is an initial stack size.
+	StackSize = 2048
+
+	// GlobalSize is an upper limit of the number of global bindings the VM can support.
+	GlobalSize = 1 << 16 // 16 bits
+)
 
 var (
 	// True is the boolean `true` value.
@@ -29,16 +34,27 @@ type VM struct {
 	stack []object.Object
 	// Stackpointer always points to the *next* value. Top of stack is `stack[sp-1]`.
 	sp int
+
+	// globals store
+	globals []object.Object
 }
 
 // New creates a new VM instance which executes the given bytecode.
 func New(bytecode *compiler.Bytecode) *VM {
+	return NewWithGlobalStore(bytecode, make([]object.Object, GlobalSize))
+}
+
+// NewWithGlobalStore creates a new VM instance which executes the given bytecode with the
+// given globals store.
+func NewWithGlobalStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
 	return &VM{
 		insns:  bytecode.Instructions,
 		consts: bytecode.Constants,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
+
+		globals: globals,
 	}
 }
 
@@ -124,6 +140,20 @@ func (vm *VM) Run() error {
 			condition := vm.pop()
 			if !isTruthy(condition) {
 				ip = pos - 1
+			}
+
+		case code.OpSetGlobal:
+			globalIdx := code.ReadUint16(vm.insns[ip+1:])
+			ip += 2
+
+			vm.globals[globalIdx] = vm.pop()
+
+		case code.OpGetGlobal:
+			globalIdx := code.ReadUint16(vm.insns[ip+1:])
+			ip += 2
+
+			if err := vm.push(vm.globals[globalIdx]); err != nil {
+				return err
 			}
 		}
 	}

@@ -42,6 +42,10 @@ const (
 	OpJump
 	// OpNil is an opcode to push `nil` value on to the stack.
 	OpNil
+	// OpSetGlobal is an opcode to create a global binding.
+	OpSetGlobal
+	// OpGetGlobal is an opcode to retrieve a value of a global binding.
+	OpGetGlobal
 )
 
 // Definition represents the definition of an opcode.
@@ -67,6 +71,8 @@ var definitions = map[Opcode]*Definition{
 	OpJumpNotTruthy: {Name: "OpJumpNotTruthy", OperandWidths: []int{2}},
 	OpJump:          {Name: "OpJump", OperandWidths: []int{2}},
 	OpNil:           {Name: "OpNil", OperandWidths: nil},
+	OpSetGlobal:     {Name: "OpSetGlobal", OperandWidths: []int{2}},
+	OpGetGlobal:     {Name: "OpGetGlobal", OperandWidths: []int{2}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
