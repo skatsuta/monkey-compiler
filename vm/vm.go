@@ -104,6 +104,18 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpArray:
+			numElems := int(code.ReadUint16(vm.insns[ip+1:]))
+			ip += 2
+
+			startIdx := vm.sp - numElems
+			arr := vm.buildArray(startIdx, vm.sp)
+			vm.sp = startIdx
+
+			if err := vm.push(arr); err != nil {
+				return err
+			}
+
 		case code.OpPop:
 			vm.pop()
 
@@ -185,6 +197,16 @@ func (vm *VM) pop() object.Object {
 	vm.sp--
 
 	return obj
+}
+
+func (vm *VM) buildArray(startIdx, endIdx int) object.Object {
+	elems := make([]object.Object, endIdx-startIdx)
+
+	for i := startIdx; i < endIdx; i++ {
+		elems[i-startIdx] = vm.stack[i]
+	}
+
+	return &object.Array{Elements: elems}
 }
 
 func (vm *VM) execBangOp() error {

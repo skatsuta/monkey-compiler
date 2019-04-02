@@ -46,6 +46,8 @@ const (
 	OpSetGlobal
 	// OpGetGlobal is an opcode to retrieve a value of a global binding.
 	OpGetGlobal
+	// OpArray is an opcode to create an array.
+	OpArray
 )
 
 // Definition represents the definition of an opcode.
@@ -73,6 +75,7 @@ var definitions = map[Opcode]*Definition{
 	OpNil:           {Name: "OpNil", OperandWidths: nil},
 	OpSetGlobal:     {Name: "OpSetGlobal", OperandWidths: []int{2}},
 	OpGetGlobal:     {Name: "OpGetGlobal", OperandWidths: []int{2}},
+	OpArray:         {Name: "OpArray", OperandWidths: []int{2}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

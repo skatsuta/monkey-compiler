@@ -109,6 +109,16 @@ func TestStringExpressions(t *testing.T) {
 	runVMTests(t, tests)
 }
 
+func TestArrayLiterals(t *testing.T) {
+	tests := []vmTestCase{
+		{"[]", []int{}},
+		{"[1, 2, 3]", []int{1, 2, 3}},
+		{"[1 + 2, 3 - 4, 5 * 6]", []int{3, -1, 30}},
+	}
+
+	runVMTests(t, tests)
+}
+
 func runVMTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -143,18 +153,40 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 		if err := testBooleanObject(bool(want), got); err != nil {
 			t.Errorf("testBooleanObject failed: %s", err)
 		}
+
 	case int:
 		if err := testIntegerObject(int64(want), got); err != nil {
 			t.Errorf("testIntegerObject failed: %s", err)
 		}
+
 	case string:
 		if err := testStringObject(want, got); err != nil {
 			t.Errorf("testStringObject failed: %s", err)
 		}
+
+	case []int:
+		arr, ok := got.(*object.Array)
+		if !ok {
+			t.Errorf("object is not Array. got=%T (%#v)", got, got)
+			return
+		}
+
+		if len(arr.Elements) != len(want) {
+			t.Errorf("wrong num of elements. want=%d, got=%d", len(want), len(arr.Elements))
+			return
+		}
+
+		for i, el := range want {
+			if err := testIntegerObject(int64(el), arr.Elements[i]); err != nil {
+				t.Errorf("testIntegerObject failed: %s", err)
+			}
+		}
+
 	case *object.Nil:
 		if got != Nil {
 			t.Errorf("object is not Nil: %T (%#v)", got, got)
 		}
+
 	default:
 		t.Errorf("testExpectedObject failed: unknown type %T (%#v)", got, got)
 	}
