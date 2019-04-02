@@ -99,6 +99,16 @@ func TestGlobalLetStatements(t *testing.T) {
 	runVMTests(t, tests)
 }
 
+func TestStringExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{`"monkey"`, "monkey"},
+		{`"mon" + "key"`, "monkey"},
+		{`"mon" + "key" + "banana"`, "monkeybanana"},
+	}
+
+	runVMTests(t, tests)
+}
+
 func runVMTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -137,6 +147,10 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 		if err := testIntegerObject(int64(want), got); err != nil {
 			t.Errorf("testIntegerObject failed: %s", err)
 		}
+	case string:
+		if err := testStringObject(want, got); err != nil {
+			t.Errorf("testStringObject failed: %s", err)
+		}
 	case *object.Nil:
 		if got != Nil {
 			t.Errorf("object is not Nil: %T (%#v)", got, got)
@@ -167,6 +181,20 @@ func testIntegerObject(want int64, got object.Object) error {
 
 	if result.Value != want {
 		return fmt.Errorf("object has wrong value. want=%d, got=%d", want, result.Value)
+	}
+
+	return nil
+}
+
+func testStringObject(want string, got object.Object) error {
+	result, ok := got.(*object.String)
+	if !ok {
+		return fmt.Errorf("object is not String. got=%T (%#v)", got, got)
+
+	}
+
+	if result.Value != want {
+		return fmt.Errorf("object has wrong value. want=%q, got=%q", want, result.Value)
 	}
 
 	return nil

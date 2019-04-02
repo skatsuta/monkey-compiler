@@ -275,6 +275,31 @@ func TestGlobalLetStatements(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestStringExpressions(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input:      `"monkey"`,
+			wantConsts: []interface{}{"monkey"},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      `"mon" + "key"`,
+			wantConsts: []interface{}{"mon", "key"},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
@@ -337,6 +362,11 @@ func testConstants(want []interface{}, got []object.Object) error {
 			if e := testIntegerObject(int64(c), got[i]); e != nil {
 				return fmt.Errorf("constant %d - testIntegerObject failed: %s", i, e)
 			}
+
+		case string:
+			if err := testStringObject(c, got[i]); err != nil {
+				return fmt.Errorf("constant %d - testStringObject failed: %s", i, err)
+			}
 		}
 	}
 
@@ -351,6 +381,19 @@ func testIntegerObject(want int64, got object.Object) error {
 
 	if result.Value != want {
 		return fmt.Errorf("object has wrong value. want=%d, got=%d", want, result.Value)
+	}
+
+	return nil
+}
+
+func testStringObject(want string, got object.Object) error {
+	result, ok := got.(*object.String)
+	if !ok {
+		return fmt.Errorf("object is not String. got=%T (%#v)", got, got)
+	}
+
+	if result.Value != want {
+		return fmt.Errorf("object has wrong value. want=%q, got=%q", want, result.Value)
 	}
 
 	return nil
