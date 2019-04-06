@@ -92,7 +92,7 @@ var definitions = map[Opcode]*Definition{
 	OpArray:         {Name: "OpArray", OperandWidths: []int{2}},
 	OpHash:          {Name: "OpHash", OperandWidths: []int{2}},
 	OpIndex:         {Name: "OpIndex", OperandWidths: nil},
-	OpCall:          {Name: "OpCall", OperandWidths: nil},
+	OpCall:          {Name: "OpCall", OperandWidths: []int{1}},
 	OpReturnValue:   {Name: "OpReturnValue", OperandWidths: nil},
 	OpReturn:        {Name: "OpReturn", OperandWidths: nil},
 	OpSetLocal:      {Name: "OpSetLocal", OperandWidths: []int{1}},

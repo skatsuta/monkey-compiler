@@ -211,15 +211,12 @@ func (vm *VM) Run() error {
 			}
 
 		case code.OpCall:
-			elem := vm.stack[vm.sp-1]
-			fn, ok := elem.(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("calling non-function: type %s", elem.Type())
-			}
+			numArgs := int(code.ReadUint8(insns[ip+1:]))
+			vm.currentFrame().ip++
 
-			frame := NewFrame(fn, vm.sp)
-			vm.pushFrame(frame)
-			vm.sp = frame.bp + fn.NumLocals // Reserve slots for local bindings on the stack
+			if err := vm.callFunction(numArgs); err != nil {
+				return err
+			}
 
 		case code.OpReturnValue:
 			// Pop the return value off the stack before clearing the stack frame
@@ -486,6 +483,28 @@ func (vm *VM) execIntComparison(op code.Opcode, left, right object.Object) error
 	default:
 		return fmt.Errorf("unknown operator %d for integers", op)
 	}
+}
+
+func (vm *VM) callFunction(numArgs int) error {
+	// Need -1 because vm.sp points to the next slot where the next element will be pushed
+	elem := vm.stack[vm.sp-1-numArgs]
+	fn, ok := elem.(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("calling non-function: type %s", elem.Type())
+	}
+
+	if numArgs != fn.NumParameters {
+		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
+	}
+
+	// Create a new stack frame
+	basePtr := vm.sp - numArgs
+	frame := NewFrame(fn, basePtr)
+	vm.pushFrame(frame)
+
+	vm.sp = frame.bp + fn.NumLocals // Reserve slots for local bindings on the stack
+
+	return nil
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {

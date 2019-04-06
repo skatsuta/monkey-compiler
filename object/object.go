@@ -364,7 +364,8 @@ func (m *Macro) Inspect() string {
 type CompiledFunction struct {
 	Instructions code.Instructions
 	// NumLocals is used for reserving slots to store local bindings on the stack
-	NumLocals int
+	NumLocals     int
+	NumParameters int
 }
 
 // Type returns the type of `cf`.
