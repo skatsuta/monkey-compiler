@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/skatsuta/monkey-compiler/ast"
+	"github.com/skatsuta/monkey-compiler/code"
 )
 
 // Type is a type of objects.
@@ -40,6 +41,8 @@ const (
 	QuoteType = "Quote"
 	// MacroType represents a type of macros.
 	MacroType = "Macro"
+	// CompiledFunctionType represents a type of compiled functions.
+	CompiledFunctionType = "CompiledFunction"
 )
 
 // Object represents an object of Monkey language.
@@ -355,4 +358,19 @@ func (m *Macro) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+// CompiledFunction represents a function compiled to bytecode instructions.
+type CompiledFunction struct {
+	Instructions code.Instructions
+}
+
+// Type returns the type of `cf`.
+func (cf *CompiledFunction) Type() Type {
+	return CompiledFunctionType
+}
+
+// Inspect returns a string representation of `cf`.
+func (cf *CompiledFunction) Inspect() string {
+	return fmt.Sprintf("%s[%p]", CompiledFunctionType, cf)
 }
