@@ -50,6 +50,8 @@ const (
 	OpArray
 	// OpHash is an opcode to create a hash map.
 	OpHash
+	// OpIndex is an opcode to get an element at the index from an indexed data structure.
+	OpIndex
 )
 
 // Definition represents the definition of an opcode.
@@ -79,6 +81,7 @@ var definitions = map[Opcode]*Definition{
 	OpGetGlobal:     {Name: "OpGetGlobal", OperandWidths: []int{2}},
 	OpArray:         {Name: "OpArray", OperandWidths: []int{2}},
 	OpHash:          {Name: "OpHash", OperandWidths: []int{2}},
+	OpIndex:         {Name: "OpIndex", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

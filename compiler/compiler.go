@@ -130,6 +130,17 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("unknown operator: %s", node.Operator)
 		}
 
+	case *ast.IndexExpression:
+		if err := c.Compile(node.Left); err != nil {
+			return err
+		}
+
+		if err := c.Compile(node.Index); err != nil {
+			return err
+		}
+
+		c.emit(code.OpIndex)
+
 	case *ast.IfExpression:
 		if err := c.Compile(node.Condition); err != nil {
 			return err
