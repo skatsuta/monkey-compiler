@@ -8,13 +8,15 @@ import (
 func TestInstructionsString(t *testing.T) {
 	insns := []Instructions{
 		Make(OpAdd),
+		Make(OpGetLocal, 0x1),
 		Make(OpConstant, 0x2),
 		Make(OpConstant, 0xFF),
 	}
 
 	want := `0000 OpAdd
-0001 OpConstant 0x2
-0004 OpConstant 0xFF
+0001 OpGetLocal 0x1
+0003 OpConstant 0x2
+0006 OpConstant 0xFF
 `
 
 	concat := make(Instructions, 0, len(insns))
@@ -35,8 +37,21 @@ func TestMake(t *testing.T) {
 		operands []int
 		want     []byte
 	}{
-		{OpConstant, []int{65534}, []byte{byte(OpConstant), 255, 254}},
-		{OpAdd, nil, []byte{byte(OpAdd)}},
+		{
+			op:       OpConstant,
+			operands: []int{65534},
+			want:     []byte{byte(OpConstant), 255, 254},
+		},
+		{
+			op:       OpAdd,
+			operands: nil,
+			want:     []byte{byte(OpAdd)},
+		},
+		{
+			op:       OpGetLocal,
+			operands: []int{255},
+			want:     []byte{byte(OpGetLocal), 255},
+		},
 	}
 
 	for _, tt := range tests {
@@ -60,6 +75,7 @@ func TestReadOperands(t *testing.T) {
 		bytesRead int
 	}{
 		{op: OpConstant, operands: []int{0xFF}, bytesRead: 2},
+		{op: OpGetLocal, operands: []int{0xFF}, bytesRead: 1},
 	}
 
 	for _, tt := range tests {

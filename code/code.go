@@ -58,6 +58,10 @@ const (
 	OpReturnValue
 	// OpReturn is an opcode to return from a function without return value.
 	OpReturn
+	// OpSetLocal is an opcode to create a local binding.
+	OpSetLocal
+	// OpGetLocal is an opcode to retrieve a value of a local binding.
+	OpGetLocal
 )
 
 // Definition represents the definition of an opcode.
@@ -91,6 +95,8 @@ var definitions = map[Opcode]*Definition{
 	OpCall:          {Name: "OpCall", OperandWidths: nil},
 	OpReturnValue:   {Name: "OpReturnValue", OperandWidths: nil},
 	OpReturn:        {Name: "OpReturn", OperandWidths: nil},
+	OpSetLocal:      {Name: "OpSetLocal", OperandWidths: []int{1}},
+	OpGetLocal:      {Name: "OpGetLocal", OperandWidths: []int{1}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
@@ -157,12 +163,14 @@ func Make(op Opcode, operands ...int) []byte {
 
 	insn := make([]byte, insnLen)
 	insn[0] = byte(op)
-
 	offset := 1
+
 	for i, o := range operands {
 		width := def.OperandWidths[i]
 		switch width {
-		case 2: // 2 bytes
+		case 1: // 1 byte-width operand
+			insn[offset] = byte(o)
+		case 2: // 2 byte-width operand
 			binary.BigEndian.PutUint16(insn[offset:], uint16(o))
 		}
 		offset += width
@@ -178,7 +186,9 @@ func ReadOperands(def *Definition, insns Instructions) (operands []int, offset i
 
 	for i, width := range def.OperandWidths {
 		switch width {
-		case 2: // 2 bytes
+		case 1: // 1 byte-width operand
+			operands[i] = int(ReadUint8(insns[offset:]))
+		case 2: // 2 byte-width operand
 			operands[i] = int(ReadUint16(insns[offset:]))
 		}
 
@@ -186,6 +196,11 @@ func ReadOperands(def *Definition, insns Instructions) (operands []int, offset i
 	}
 
 	return operands, offset
+}
+
+// ReadUint8 reads a single uint8 value from bytecode instruction sequence.
+func ReadUint8(insns Instructions) uint8 {
+	return uint8(insns[0])
 }
 
 // ReadUint16 reads a single uint16 value from bytecode instruction sequence.

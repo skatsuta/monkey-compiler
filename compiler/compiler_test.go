@@ -495,22 +495,22 @@ func TestFunctions(t *testing.T) {
 }
 
 func TestCompilerScopes(t *testing.T) {
-	complr := New()
-	if complr.scopeIdx != 0 {
-		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, complr.scopeIdx)
+	c := New()
+	if c.scopeIdx != 0 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, c.scopeIdx)
+	}
+	globalSymTab := c.symTab
+
+	c.emit(code.OpMul)
+
+	c.enterScope()
+	if c.scopeIdx != 1 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 1, c.scopeIdx)
 	}
 
-	complr.emit(code.OpMul)
+	c.emit(code.OpSub)
 
-	complr.enterScope()
-	scopeIdx := complr.scopeIdx
-	if scopeIdx != 1 {
-		t.Errorf("scopeIdx wrong. want=%d, got=%d", 1, scopeIdx)
-	}
-
-	complr.emit(code.OpSub)
-
-	scope := complr.scopes[scopeIdx]
+	scope := c.currentScope()
 	insnsLen := len(scope.insns)
 	if insnsLen != 1 {
 		t.Errorf("instructions length wrong. want=%d, got=%d", 1, insnsLen)
@@ -519,15 +519,25 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("lastInsn.Opcode wrong. want=%d, got=%d", code.OpSub, last.Opcode)
 	}
 
-	complr.leaveScope()
-	scopeIdx = complr.scopeIdx
-	if scopeIdx != 0 {
-		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, complr.scopeIdx)
+	if c.symTab.outer != globalSymTab {
+		t.Errorf("compiler did not enclose global symbol table")
 	}
 
-	complr.emit(code.OpAdd)
+	c.leaveScope()
+	if c.scopeIdx != 0 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, c.scopeIdx)
+	}
 
-	scope = complr.scopes[scopeIdx]
+	if c.symTab != globalSymTab {
+		t.Errorf("compiler did not restore global symbol table")
+	}
+	if c.symTab.hasOuter() {
+		t.Errorf("compiler modified global symbol table incorrectly")
+	}
+
+	c.emit(code.OpAdd)
+
+	scope = c.currentScope()
 	insnsLen = len(scope.insns)
 	if insnsLen != 2 {
 		t.Errorf("instructions length wrong. want=%d, got=%d", 2, insnsLen)
@@ -574,6 +584,80 @@ func TestFunctionCalls(t *testing.T) {
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestLetStatementScopes(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let num = 55;
+			fn() { num }
+			`,
+			wantConsts: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpGetGlobal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				let num = 55;
+				num
+			}
+			`,
+			wantConsts: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				let a = 55;
+				let b = 77;
+				a + b
+			}
+			`,
+			wantConsts: []interface{}{
+				55,
+				77,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 1),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetLocal, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 2),
 				code.Make(code.OpPop),
 			},
 		},

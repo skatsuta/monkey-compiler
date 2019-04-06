@@ -53,7 +53,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 // given globals store.
 func NewWithGlobalStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
 	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
-	mainFrame := NewFrame(mainFn)
+	mainFrame := NewFrame(mainFn, 0) // Base pointer points to zero
 
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
@@ -217,17 +217,17 @@ func (vm *VM) Run() error {
 				return fmt.Errorf("calling non-function: type %s", elem.Type())
 			}
 
-			frame := NewFrame(fn)
+			frame := NewFrame(fn, vm.sp)
 			vm.pushFrame(frame)
+			vm.sp = frame.bp + fn.NumLocals // Reserve slots for local bindings on the stack
 
 		case code.OpReturnValue:
-			// Get the return value off the stack
+			// Pop the return value off the stack before clearing the stack frame
 			retVal := vm.pop()
 
 			// Clear the called function's stack frame
-			vm.popFrame()
-			// Clear the called function object itself
-			vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.bp - 1 // -1 for the called function object itself on the stack
 
 			// Push the return value on to the stack again
 			if err := vm.push(retVal); err != nil {
@@ -236,12 +236,25 @@ func (vm *VM) Run() error {
 
 		case code.OpReturn:
 			// Clear the called function's stack frame
-			vm.popFrame()
-			// Clear the called function object itself
-			vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.bp - 1 // -1 for the called function object itself on the stack
 
 			// Push the Nil value on to the stack because we have no return value
 			if err := vm.push(Nil); err != nil {
+				return err
+			}
+
+		case code.OpSetLocal:
+			localIdx := int(code.ReadUint8(insns[ip+1:]))
+			frame.ip++
+
+			vm.stack[frame.bp+localIdx] = vm.pop()
+
+		case code.OpGetLocal:
+			localIdx := int(code.ReadUint8(insns[ip+1:]))
+			frame.ip++
+
+			if err := vm.push(vm.stack[frame.bp+localIdx]); err != nil {
 				return err
 			}
 		}

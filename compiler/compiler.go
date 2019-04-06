@@ -79,8 +79,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
+		// Define an identifier as a symbol in a proper scope
 		sym := c.symTab.Define(node.Name.Value)
-		c.emit(code.OpSetGlobal, sym.Index)
+		if sym.Scope == GlobalScope {
+			c.emit(code.OpSetGlobal, sym.Index)
+		} else {
+			c.emit(code.OpSetLocal, sym.Index)
+		}
 
 	case *ast.ReturnStatement:
 		if err := c.Compile(node.ReturnValue); err != nil {
@@ -206,7 +211,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return fmt.Errorf("undefined variable %q", node.Value)
 		}
 
-		c.emit(code.OpGetGlobal, sym.Index)
+		if sym.Scope == GlobalScope {
+			c.emit(code.OpGetGlobal, sym.Index)
+		} else {
+			c.emit(code.OpGetLocal, sym.Index)
+		}
 
 	case *ast.Boolean:
 		if node.Value {
@@ -267,9 +276,15 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpReturn)
 		}
 
+		// Take the number of local bindings defined in the current scope from the symbol table
+		// before leaving the scope, in order to pass the number to the function later on
+		numLocals := c.symTab.numDefs
 		insns := c.leaveScope()
 
-		compiledFn := &object.CompiledFunction{Instructions: insns}
+		compiledFn := &object.CompiledFunction{
+			Instructions: insns,
+			NumLocals:    numLocals,
+		}
 		c.emit(code.OpConstant, c.addConstant(compiledFn))
 	}
 
@@ -349,12 +364,17 @@ func (c *Compiler) enterScope() {
 	}
 	c.scopes = append(c.scopes, scope)
 	c.scopeIdx++
+
+	// Create a new nested symbol table
+	c.symTab = NewEnclosedSymbolTable(c.symTab)
 }
 func (c *Compiler) leaveScope() code.Instructions {
 	insns := c.currentInsns()
-
 	c.scopes = c.scopes[:len(c.scopes)-1]
 	c.scopeIdx--
+
+	// Restore the outer symbol table
+	c.symTab = c.symTab.outer
 
 	return insns
 }
