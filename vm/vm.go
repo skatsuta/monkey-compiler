@@ -15,6 +15,9 @@ const (
 
 	// GlobalSize is an upper limit of the number of global bindings the VM can support.
 	GlobalSize = 1 << 16 // 16 bits
+
+	// MaxFrames is the maximum number of stack frames.
+	MaxFrames = 1024
 )
 
 var (
@@ -29,7 +32,6 @@ var (
 // VM is a virtual machine which interprets and executes bytecode instructions.
 type VM struct {
 	consts []object.Object
-	insns  code.Instructions
 
 	stack []object.Object
 	// Stackpointer always points to the *next* value. Top of stack is `stack[sp-1]`.
@@ -37,6 +39,9 @@ type VM struct {
 
 	// globals store
 	globals []object.Object
+
+	frames    []*Frame
+	framesIdx int
 }
 
 // New creates a new VM instance which executes the given bytecode.
@@ -47,14 +52,22 @@ func New(bytecode *compiler.Bytecode) *VM {
 // NewWithGlobalStore creates a new VM instance which executes the given bytecode with the
 // given globals store.
 func NewWithGlobalStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
+	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
+	mainFrame := NewFrame(mainFn)
+
+	frames := make([]*Frame, MaxFrames)
+	frames[0] = mainFrame
+
 	return &VM{
-		insns:  bytecode.Instructions,
 		consts: bytecode.Constants,
 
 		stack: make([]object.Object, StackSize),
 		sp:    0,
 
 		globals: globals,
+
+		frames:    frames,
+		framesIdx: 1,
 	}
 }
 
@@ -74,16 +87,22 @@ func (vm *VM) LastPoppedStackElem() object.Object {
 
 // Run executes bytecode instructions.
 func (vm *VM) Run() error {
-	for ip := 0; ip < len(vm.insns); ip++ {
-		op := code.Opcode(vm.insns[ip])
+	frame := vm.currentFrame()
+
+	for frame.ip < len(frame.Instructions())-1 {
+		frame.ip++
+
+		ip := frame.ip
+		insns := frame.Instructions()
+		op := code.Opcode(insns[ip])
 
 		switch op {
 		case code.OpConstant:
 			// Read a 2-byte operand from the next position
-			constIdx := code.ReadUint16(vm.insns[ip+1:])
+			constIdx := code.ReadUint16(insns[ip+1:])
 			// Because the operand is 2-byte width and we already read it,
 			// increment the pointer by 2 (bytes)
-			ip += 2
+			frame.ip += 2
 
 			if err := vm.push(vm.consts[constIdx]); err != nil {
 				return err
@@ -105,8 +124,8 @@ func (vm *VM) Run() error {
 			}
 
 		case code.OpArray:
-			numElems := int(code.ReadUint16(vm.insns[ip+1:]))
-			ip += 2
+			numElems := int(code.ReadUint16(insns[ip+1:]))
+			frame.ip += 2
 
 			startIdx := vm.sp - numElems
 			arr := vm.buildArray(startIdx, vm.sp)
@@ -117,8 +136,8 @@ func (vm *VM) Run() error {
 			}
 
 		case code.OpHash:
-			numElems := int(code.ReadUint16(vm.insns[ip+1:]))
-			ip += 2
+			numElems := int(code.ReadUint16(insns[ip+1:]))
+			frame.ip += 2
 
 			startIdx := vm.sp - numElems
 			hash, err := vm.buildHash(startIdx, vm.sp)
@@ -163,37 +182,89 @@ func (vm *VM) Run() error {
 			}
 
 		case code.OpJump:
-			pos := int(code.ReadUint16(vm.insns[ip+1:]))
+			pos := int(code.ReadUint16(insns[ip+1:]))
 			// Since we're in a loop that increments `ip` with each iteration, we need to set `ip`
 			// to the offset *right before the one* we want.
-			ip = pos - 1
+			frame.ip = pos - 1
 
 		case code.OpJumpNotTruthy:
-			pos := int(code.ReadUint16(vm.insns[ip+1:]))
-			ip += 2
+			pos := int(code.ReadUint16(insns[ip+1:]))
+			frame.ip += 2
 
 			condition := vm.pop()
 			if !isTruthy(condition) {
-				ip = pos - 1
+				frame.ip = pos - 1
 			}
 
 		case code.OpSetGlobal:
-			globalIdx := code.ReadUint16(vm.insns[ip+1:])
-			ip += 2
+			globalIdx := code.ReadUint16(insns[ip+1:])
+			frame.ip += 2
 
 			vm.globals[globalIdx] = vm.pop()
 
 		case code.OpGetGlobal:
-			globalIdx := code.ReadUint16(vm.insns[ip+1:])
-			ip += 2
+			globalIdx := code.ReadUint16(insns[ip+1:])
+			frame.ip += 2
 
 			if err := vm.push(vm.globals[globalIdx]); err != nil {
 				return err
 			}
+
+		case code.OpCall:
+			elem := vm.stack[vm.sp-1]
+			fn, ok := elem.(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function: type %s", elem.Type())
+			}
+
+			frame := NewFrame(fn)
+			vm.pushFrame(frame)
+
+		case code.OpReturnValue:
+			// Get the return value off the stack
+			retVal := vm.pop()
+
+			// Clear the called function's stack frame
+			vm.popFrame()
+			// Clear the called function object itself
+			vm.pop()
+
+			// Push the return value on to the stack again
+			if err := vm.push(retVal); err != nil {
+				return err
+			}
+
+		case code.OpReturn:
+			// Clear the called function's stack frame
+			vm.popFrame()
+			// Clear the called function object itself
+			vm.pop()
+
+			// Push the Nil value on to the stack because we have no return value
+			if err := vm.push(Nil); err != nil {
+				return err
+			}
 		}
+
+		// Update current frame for the next interation
+		frame = vm.currentFrame()
 	}
 
 	return nil
+}
+
+func (vm *VM) currentFrame() *Frame {
+	return vm.frames[vm.framesIdx-1]
+}
+
+func (vm *VM) pushFrame(f *Frame) {
+	vm.frames[vm.framesIdx] = f
+	vm.framesIdx++
+}
+
+func (vm *VM) popFrame() *Frame {
+	vm.framesIdx--
+	return vm.frames[vm.framesIdx]
 }
 
 func (vm *VM) push(obj object.Object) error {
