@@ -274,7 +274,7 @@ func testBooleanObject(want bool, got object.Object) error {
 func testIntegerObject(want int64, got object.Object) error {
 	result, ok := got.(*object.Integer)
 	if !ok {
-		return fmt.Errorf("object is not Integer. got=%T (%#v)", got, got)
+		return fmt.Errorf("object is not Integer. got=%T (%+v)", got, got)
 	}
 
 	if result.Value != want {
