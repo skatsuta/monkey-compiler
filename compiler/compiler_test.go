@@ -424,6 +424,164 @@ func TestIndexExpressions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestFunctions(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: "fn() { return 5 + 10 }",
+			wantConsts: []interface{}{
+				5,
+				10,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: "fn() { 5 + 10 }",
+			wantConsts: []interface{}{
+				5,
+				10,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: "fn() { 1; 2 }",
+			wantConsts: []interface{}{
+				1,
+				2,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpPop),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: "fn() { }",
+			wantConsts: []interface{}{
+				[]code.Instructions{
+					code.Make(code.OpReturn),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
+func TestCompilerScopes(t *testing.T) {
+	complr := New()
+	if complr.scopeIdx != 0 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, complr.scopeIdx)
+	}
+
+	complr.emit(code.OpMul)
+
+	complr.enterScope()
+	scopeIdx := complr.scopeIdx
+	if scopeIdx != 1 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 1, scopeIdx)
+	}
+
+	complr.emit(code.OpSub)
+
+	scope := complr.scopes[scopeIdx]
+	insnsLen := len(scope.insns)
+	if insnsLen != 1 {
+		t.Errorf("instructions length wrong. want=%d, got=%d", 1, insnsLen)
+	}
+	if last := scope.lastInsn; last.Opcode != code.OpSub {
+		t.Errorf("lastInsn.Opcode wrong. want=%d, got=%d", code.OpSub, last.Opcode)
+	}
+
+	complr.leaveScope()
+	scopeIdx = complr.scopeIdx
+	if scopeIdx != 0 {
+		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, complr.scopeIdx)
+	}
+
+	complr.emit(code.OpAdd)
+
+	scope = complr.scopes[scopeIdx]
+	insnsLen = len(scope.insns)
+	if insnsLen != 2 {
+		t.Errorf("instructions length wrong. want=%d, got=%d", 2, insnsLen)
+	}
+	if last := scope.lastInsn; last.Opcode != code.OpAdd {
+		t.Errorf("lastInsn.Opcode wrong. want=%d, got=%d", code.OpAdd, last.Opcode)
+	}
+	if prev := scope.prevInsn; prev.Opcode != code.OpMul {
+		t.Errorf("prevInsn.Opcode wrong. want=%d, got=%d", code.OpMul, prev.Opcode)
+	}
+}
+
+func TestFunctionCalls(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: "fn() { 24 }()",
+			wantConsts: []interface{}{
+				24,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0), // The literal "24"
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 1), // The compiled function
+				code.Make(code.OpCall),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			let noArg = fn() { 24 };
+			noArg();
+			`,
+			wantConsts: []interface{}{
+				24,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0), // The literal "24"
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 1), // The compiled function
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpCall),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
@@ -491,6 +649,19 @@ func testConstants(want []interface{}, got []object.Object) error {
 			if err := testStringObject(c, got[i]); err != nil {
 				return fmt.Errorf("constant %d - testStringObject failed: %s", i, err)
 			}
+
+		case []code.Instructions:
+			fn, ok := got[i].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("constant %d - not a function: %T", i, got[i])
+			}
+
+			if err := testInstructions(c, fn.Instructions); err != nil {
+				return fmt.Errorf("constant %d - testInstructions failed: %s", i, err)
+			}
+
+		default:
+			return fmt.Errorf("constant %d - unsupported constant type: %T", i, c)
 		}
 	}
 

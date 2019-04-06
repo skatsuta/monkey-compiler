@@ -52,6 +52,12 @@ const (
 	OpHash
 	// OpIndex is an opcode to get an element at the index from an indexed data structure.
 	OpIndex
+	// OpCall is an opcode to call compiled functions.
+	OpCall
+	// OpReturnValue is an opcode to return a value from a function.
+	OpReturnValue
+	// OpReturn is an opcode to return from a function without return value.
+	OpReturn
 )
 
 // Definition represents the definition of an opcode.
@@ -82,6 +88,9 @@ var definitions = map[Opcode]*Definition{
 	OpArray:         {Name: "OpArray", OperandWidths: []int{2}},
 	OpHash:          {Name: "OpHash", OperandWidths: []int{2}},
 	OpIndex:         {Name: "OpIndex", OperandWidths: nil},
+	OpCall:          {Name: "OpCall", OperandWidths: nil},
+	OpReturnValue:   {Name: "OpReturnValue", OperandWidths: nil},
+	OpReturn:        {Name: "OpReturn", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
