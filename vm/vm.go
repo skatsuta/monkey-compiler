@@ -212,9 +212,9 @@ func (vm *VM) Run() error {
 
 		case code.OpCall:
 			numArgs := int(code.ReadUint8(insns[ip+1:]))
-			vm.currentFrame().ip++
+			frame.ip++
 
-			if err := vm.callFunction(numArgs); err != nil {
+			if err := vm.execCall(numArgs); err != nil {
 				return err
 			}
 
@@ -252,6 +252,16 @@ func (vm *VM) Run() error {
 			frame.ip++
 
 			if err := vm.push(vm.stack[frame.bp+localIdx]); err != nil {
+				return err
+			}
+
+		case code.OpGetBuiltin:
+			builtinIdx := code.ReadUint8(insns[ip+1:])
+			frame.ip++
+
+			def := object.Builtins[builtinIdx]
+
+			if err := vm.push(def.Builtin); err != nil {
 				return err
 			}
 		}
@@ -485,14 +495,19 @@ func (vm *VM) execIntComparison(op code.Opcode, left, right object.Object) error
 	}
 }
 
-func (vm *VM) callFunction(numArgs int) error {
-	// Need -1 because vm.sp points to the next slot where the next element will be pushed
-	elem := vm.stack[vm.sp-1-numArgs]
-	fn, ok := elem.(*object.CompiledFunction)
-	if !ok {
-		return fmt.Errorf("calling non-function: type %s", elem.Type())
+func (vm *VM) execCall(numArgs int) error {
+	callee := vm.stack[vm.sp-1-numArgs]
+	switch callee := callee.(type) {
+	case *object.CompiledFunction:
+		return vm.callFunction(callee, numArgs)
+	case *object.Builtin:
+		return vm.callBuiltin(callee, numArgs)
+	default:
+		return fmt.Errorf("calling non-function and non-built-in: type %s", callee.Type())
 	}
+}
 
+func (vm *VM) callFunction(fn *object.CompiledFunction, numArgs int) error {
 	if numArgs != fn.NumParameters {
 		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
 	}
@@ -505,6 +520,20 @@ func (vm *VM) callFunction(numArgs int) error {
 	vm.sp = frame.bp + fn.NumLocals // Reserve slots for local bindings on the stack
 
 	return nil
+}
+
+func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
+	args := vm.stack[vm.sp-numArgs : vm.sp]
+
+	// Execute the built-in function itself
+	result := builtin.Fn(args...)
+	// Take the arguments and the function we just executed off the stack
+	vm.sp -= (numArgs + 1)
+
+	if result == nil {
+		return vm.push(Nil)
+	}
+	return vm.push(result)
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {

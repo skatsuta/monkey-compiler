@@ -8,6 +8,8 @@ const (
 	GlobalScope SymbolScope = "GLOBAL"
 	// LocalScope represents a local scope, i.e. a function level context.
 	LocalScope SymbolScope = "LOCAL"
+	// BuiltinScope represents a scope for built-in functions.
+	BuiltinScope SymbolScope = "BUILTIN"
 )
 
 // Symbol is a symbol defined in a scope with an identifier (name).
@@ -63,4 +65,11 @@ func (s *SymbolTable) Resolve(name string) (sym Symbol, exists bool) {
 // hasOuter returns true if `s` has an outer symbol table, otherwise false.
 func (s *SymbolTable) hasOuter() bool {
 	return s.outer != nil
+}
+
+// DefineBuiltin defines
+func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
+	sym := Symbol{Name: name, Scope: BuiltinScope, Index: index}
+	s.store[name] = sym
+	return sym
 }

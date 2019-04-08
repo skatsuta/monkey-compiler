@@ -22,6 +22,12 @@ func Start(in io.Reader, out io.Writer) {
 	macroEnv := object.NewEnvironment()
 
 	symbolTable := compiler.NewSymbolTable()
+
+	// Define built-in functions
+	for i, builtin := range object.Builtins {
+		symbolTable.DefineBuiltin(i, builtin.Name)
+	}
+
 	constants := make([]object.Object, 0)
 	globals := make([]object.Object, vm.GlobalSize)
 

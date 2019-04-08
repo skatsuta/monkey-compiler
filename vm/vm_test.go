@@ -417,6 +417,29 @@ func TestCallingFunctionsWithWrongArguments(t *testing.T) {
 	}
 }
 
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{`len("")`, 0},
+		{`len("four")`, 4},
+		{`len("hello world")`, 11},
+		{`len(1)`, &object.Error{Message: "argument to `len` not supported, got Integer"}},
+		{`len("one", "two")`, &object.Error{Message: "wrong number of arguments. want=1, got=2"}},
+		{`len([1, 2, 3])`, 3},
+		{`len([])`, 0},
+		{`puts("hello", "world!")`, Nil},
+		{`first([1, 2, 3])`, 1},
+		{`first([])`, Nil},
+		{`first(1)`, &object.Error{Message: "argument to `first` must be Array, got Integer"}},
+		{`rest([1, 2, 3])`, []int{2, 3}},
+		{`rest([])`, Nil},
+		{`push([], 1)`, []int{1}},
+		{`push(1, 1)`, &object.Error{Message: "first argument to `push` must be Array, got Integer"}},
+		{`first(rest(push([1, 2, 3], 4)))`, 2},
+	}
+
+	runVMTests(t, tests)
+}
+
 func runVMTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -507,6 +530,16 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 	case *object.Nil:
 		if got != Nil {
 			t.Errorf("object is not Nil: %T (%#v)", got, got)
+		}
+
+	case *object.Error:
+		err, ok := got.(*object.Error)
+		if !ok {
+			t.Errorf("object is not Error: %T (%+v)", got, got)
+		}
+
+		if err.Message != want.Message {
+			t.Errorf("wrong error message. want=%q, got=%q", want.Message, err.Message)
 		}
 
 	default:

@@ -62,6 +62,8 @@ const (
 	OpSetLocal
 	// OpGetLocal is an opcode to retrieve a value of a local binding.
 	OpGetLocal
+	// OpGetBuiltin is an opcode to get a built-in function.
+	OpGetBuiltin
 )
 
 // Definition represents the definition of an opcode.
@@ -97,6 +99,7 @@ var definitions = map[Opcode]*Definition{
 	OpReturn:        {Name: "OpReturn", OperandWidths: nil},
 	OpSetLocal:      {Name: "OpSetLocal", OperandWidths: []int{1}},
 	OpGetLocal:      {Name: "OpGetLocal", OperandWidths: []int{1}},
+	OpGetBuiltin:    {Name: "OpGetBuiltin", OperandWidths: []int{1}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
