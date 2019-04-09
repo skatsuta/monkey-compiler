@@ -43,6 +43,8 @@ const (
 	MacroType = "Macro"
 	// CompiledFunctionType represents a type of compiled functions.
 	CompiledFunctionType = "CompiledFunction"
+	// ClosureType represents a type of closures.
+	ClosureType = "Closure"
 )
 
 // Object represents an object of Monkey language.
@@ -376,4 +378,21 @@ func (cf *CompiledFunction) Type() Type {
 // Inspect returns a string representation of `cf`.
 func (cf *CompiledFunction) Inspect() string {
 	return fmt.Sprintf("%s[%p]", CompiledFunctionType, cf)
+}
+
+// Closure represents a closure. It has a pointer to the function it wraps, `Fn`, and a place
+// to keep the free variables it carries around, `Free`.
+type Closure struct {
+	Fn   *CompiledFunction
+	Free []Object
+}
+
+// Type returns the type of `c`.
+func (c *Closure) Type() Type {
+	return ClosureType
+}
+
+// Inspect returns a string representation of `c`.
+func (c *Closure) Inspect() string {
+	return fmt.Sprintf("Closure[%p]", c)
 }

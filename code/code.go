@@ -64,6 +64,8 @@ const (
 	OpGetLocal
 	// OpGetBuiltin is an opcode to get a built-in function.
 	OpGetBuiltin
+	// OpClosure is an opcode to create a closure.
+	OpClosure
 )
 
 // Definition represents the definition of an opcode.
@@ -100,6 +102,7 @@ var definitions = map[Opcode]*Definition{
 	OpSetLocal:      {Name: "OpSetLocal", OperandWidths: []int{1}},
 	OpGetLocal:      {Name: "OpGetLocal", OperandWidths: []int{1}},
 	OpGetBuiltin:    {Name: "OpGetBuiltin", OperandWidths: []int{1}},
+	OpClosure:       {Name: "OpClosure", OperandWidths: []int{2, 1}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
@@ -147,6 +150,8 @@ func (insns Instructions) formatInstruction(def *Definition, operands []int) str
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s 0x%X", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s 0x%X 0x%X", def.Name, operands[0], operands[1])
 	}
 
 	return fmt.Sprintf("ERROR: unhandled operand width for %s: %d", def.Name, operandCount)

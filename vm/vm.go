@@ -53,7 +53,8 @@ func New(bytecode *compiler.Bytecode) *VM {
 // given globals store.
 func NewWithGlobalStore(bytecode *compiler.Bytecode, globals []object.Object) *VM {
 	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
-	mainFrame := NewFrame(mainFn, 0) // Base pointer points to zero
+	mainClosure := &object.Closure{Fn: mainFn}
+	mainFrame := NewFrame(mainClosure, 0) // Base pointer points to zero
 
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
@@ -262,6 +263,15 @@ func (vm *VM) Run() error {
 			def := object.Builtins[builtinIdx]
 
 			if err := vm.push(def.Builtin); err != nil {
+				return err
+			}
+
+		case code.OpClosure:
+			constIdx := int(code.ReadUint16(insns[ip+1:]))
+			_ = code.ReadUint8(insns[ip+3:])
+			frame.ip += 3
+
+			if err := vm.pushClosure(constIdx); err != nil {
 				return err
 			}
 		}
@@ -498,8 +508,8 @@ func (vm *VM) execIntComparison(op code.Opcode, left, right object.Object) error
 func (vm *VM) execCall(numArgs int) error {
 	callee := vm.stack[vm.sp-1-numArgs]
 	switch callee := callee.(type) {
-	case *object.CompiledFunction:
-		return vm.callFunction(callee, numArgs)
+	case *object.Closure:
+		return vm.callClosure(callee, numArgs)
 	case *object.Builtin:
 		return vm.callBuiltin(callee, numArgs)
 	default:
@@ -507,17 +517,19 @@ func (vm *VM) execCall(numArgs int) error {
 	}
 }
 
-func (vm *VM) callFunction(fn *object.CompiledFunction, numArgs int) error {
-	if numArgs != fn.NumParameters {
-		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
+func (vm *VM) callClosure(cl *object.Closure, numArgs int) error {
+	if numArgs != cl.Fn.NumParameters {
+		return fmt.Errorf(
+			"wrong number of arguments: want=%d, got=%d", cl.Fn.NumParameters, numArgs,
+		)
 	}
 
 	// Create a new stack frame
 	basePtr := vm.sp - numArgs
-	frame := NewFrame(fn, basePtr)
+	frame := NewFrame(cl, basePtr)
 	vm.pushFrame(frame)
 
-	vm.sp = frame.bp + fn.NumLocals // Reserve slots for local bindings on the stack
+	vm.sp = frame.bp + cl.Fn.NumLocals // Reserve slots for local bindings on the stack
 
 	return nil
 }
@@ -534,6 +546,17 @@ func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
 		return vm.push(Nil)
 	}
 	return vm.push(result)
+}
+
+func (vm *VM) pushClosure(constIdx int) error {
+	c := vm.consts[constIdx]
+	fn, ok := c.(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("not a function: %+v", c)
+	}
+
+	cl := &object.Closure{Fn: fn}
+	return vm.push(cl)
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
