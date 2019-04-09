@@ -47,13 +47,31 @@ func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
 
 // Define defines an identifier as a symbol in a scope.
 func (s *SymbolTable) Define(name string) Symbol {
-	sym := Symbol{Name: name, Scope: GlobalScope, Index: s.numDefs}
+	scope := GlobalScope
 	if s.hasOuter() {
-		sym.Scope = LocalScope
+		scope = LocalScope
 	}
 
-	s.store[name] = sym
+	sym := s.define(name, scope, s.numDefs)
 	s.numDefs++
+	return sym
+}
+
+// DefineBuiltin defines a built-in function with `name` at the `index`.
+func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
+	return s.define(name, BuiltinScope, index)
+}
+
+// defineFree defines a free symbol based on the `original` one.
+func (s *SymbolTable) defineFree(original Symbol) Symbol {
+	s.FreeSymbols = append(s.FreeSymbols, original)
+
+	return s.define(original.Name, FreeScope, len(s.FreeSymbols)-1)
+}
+
+func (s *SymbolTable) define(name string, scope SymbolScope, index int) Symbol {
+	sym := Symbol{Name: name, Scope: scope, Index: index}
+	s.store[name] = sym
 	return sym
 }
 
@@ -76,23 +94,4 @@ func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
 // hasOuter returns true if `s` has an outer symbol table, otherwise false.
 func (s *SymbolTable) hasOuter() bool {
 	return s.outer != nil
-}
-
-// DefineBuiltin defines
-func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
-	sym := Symbol{Name: name, Scope: BuiltinScope, Index: index}
-	s.store[name] = sym
-	return sym
-}
-
-func (s *SymbolTable) defineFree(original Symbol) Symbol {
-	s.FreeSymbols = append(s.FreeSymbols, original)
-
-	return s.define(original.Name, FreeScope, len(s.FreeSymbols)-1)
-}
-
-func (s *SymbolTable) define(name string, scope SymbolScope, index int) Symbol {
-	sym := Symbol{Name: name, Scope: scope, Index: index}
-	s.store[name] = sym
-	return sym
 }
