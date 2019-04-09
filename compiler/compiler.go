@@ -290,10 +290,17 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpReturn)
 		}
 
-		// Take the number of local bindings defined in the current scope from the symbol table
-		// before leaving the scope, in order to pass the number to the function later on
+		// It is important to take the free symbols and the number of local bindings defined
+		// in the current scope from the symbol table *before* leaving the scope
+		freeSymbols := c.symTab.FreeSymbols
 		numLocals := c.symTab.numDefs
+
 		insns := c.leaveScope()
+
+		// Iterate through and load free symbols *after* we left the scope
+		for _, s := range freeSymbols {
+			c.loadSymbol(s)
+		}
 
 		compiledFn := &object.CompiledFunction{
 			Instructions:  insns,
@@ -301,7 +308,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			NumParameters: len(node.Parameters),
 		}
 		fnIdx := c.addConstant(compiledFn)
-		c.emit(code.OpClosure, fnIdx, 0)
+		c.emit(code.OpClosure, fnIdx, len(freeSymbols))
 	}
 
 	return nil
@@ -404,6 +411,8 @@ func (c *Compiler) loadSymbol(s Symbol) {
 		c.emit(code.OpGetLocal, s.Index)
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, s.Index)
+	case FreeScope:
+		c.emit(code.OpGetFree, s.Index)
 	}
 }
 

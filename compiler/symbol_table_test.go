@@ -183,3 +183,113 @@ func TestDefineResolveBuiltins(t *testing.T) {
 		}
 	}
 }
+
+func TestResolveFree(t *testing.T) {
+	global := NewSymbolTable()
+	global.Define("a")
+	global.Define("b")
+
+	firstLocal := NewEnclosedSymbolTable(global)
+	firstLocal.Define("c")
+	firstLocal.Define("d")
+
+	secondLocal := NewEnclosedSymbolTable(firstLocal)
+	secondLocal.Define("e")
+	secondLocal.Define("f")
+
+	tests := []struct {
+		table           *SymbolTable
+		wantSymbols     []Symbol
+		wantFreeSymbols []Symbol
+	}{
+		{
+			table: firstLocal,
+			wantSymbols: []Symbol{
+				{Name: "a", Scope: GlobalScope, Index: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1},
+				{Name: "c", Scope: LocalScope, Index: 0},
+				{Name: "d", Scope: LocalScope, Index: 1},
+			},
+			wantFreeSymbols: []Symbol{},
+		},
+		{
+			table: secondLocal,
+			wantSymbols: []Symbol{
+				{Name: "a", Scope: GlobalScope, Index: 0},
+				{Name: "b", Scope: GlobalScope, Index: 1},
+				{Name: "c", Scope: FreeScope, Index: 0},
+				{Name: "d", Scope: FreeScope, Index: 1},
+				{Name: "e", Scope: LocalScope, Index: 0},
+				{Name: "f", Scope: LocalScope, Index: 1},
+			},
+			wantFreeSymbols: []Symbol{
+				{Name: "c", Scope: LocalScope, Index: 0},
+				{Name: "d", Scope: LocalScope, Index: 1},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		for _, want := range tt.wantSymbols {
+			got, ok := tt.table.Resolve(want.Name)
+			if !ok {
+				t.Errorf("name %q not resolvable", want.Name)
+				continue
+			}
+
+			if got != want {
+				t.Errorf("expected %q to resolve to %+v, but got %+v", want.Name, want, got)
+			}
+		}
+
+		if gotLen, wantLen := len(tt.table.FreeSymbols), len(tt.wantFreeSymbols); gotLen != wantLen {
+			t.Errorf("wrong number of free symbols. want=%d, got=%d", wantLen, gotLen)
+			continue
+		}
+
+		for i, want := range tt.wantFreeSymbols {
+			if got := tt.table.FreeSymbols[i]; got != want {
+				t.Errorf("wrong free symbol. want=%+v, got=%+v", want, got)
+			}
+		}
+	}
+}
+
+func TestResolveUnresolvable(t *testing.T) {
+	global := NewSymbolTable()
+	global.Define("a")
+
+	firstLocal := NewEnclosedSymbolTable(global)
+	firstLocal.Define("c")
+
+	secondLocal := NewEnclosedSymbolTable(firstLocal)
+	secondLocal.Define("e")
+	secondLocal.Define("f")
+
+	wantSymbols := []Symbol{
+		{Name: "a", Scope: GlobalScope, Index: 0},
+		{Name: "c", Scope: FreeScope, Index: 0},
+		{Name: "e", Scope: LocalScope, Index: 0},
+		{Name: "f", Scope: LocalScope, Index: 1},
+	}
+
+	for _, want := range wantSymbols {
+		got, ok := secondLocal.Resolve(want.Name)
+		if !ok {
+			t.Errorf("name %q not resolvable", want.Name)
+			continue
+		}
+
+		if got != want {
+			t.Errorf("expected %q to resolve to %+v, but got %+v", want.Name, want, got)
+		}
+	}
+
+	wantUnresolvable := []string{"b", "d"}
+
+	for _, name := range wantUnresolvable {
+		if _, ok := secondLocal.Resolve(name); ok {
+			t.Errorf("name %q resolved, but was expected not to", name)
+		}
+	}
+}

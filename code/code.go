@@ -66,6 +66,8 @@ const (
 	OpGetBuiltin
 	// OpClosure is an opcode to create a closure.
 	OpClosure
+	// OpGetFree is an opcode to retrieve a free variable on to the stack.
+	OpGetFree
 )
 
 // Definition represents the definition of an opcode.
@@ -103,6 +105,7 @@ var definitions = map[Opcode]*Definition{
 	OpGetLocal:      {Name: "OpGetLocal", OperandWidths: []int{1}},
 	OpGetBuiltin:    {Name: "OpGetBuiltin", OperandWidths: []int{1}},
 	OpClosure:       {Name: "OpClosure", OperandWidths: []int{2, 1}},
+	OpGetFree:       {Name: "OpGetFree", OperandWidths: []int{1}},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.
