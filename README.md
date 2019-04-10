@@ -1,6 +1,7 @@
 # 🐵 Monkey compiler 🐒
 
 [![wercker status](https://app.wercker.com/status/d99bbfc328db0183527cfb7e259fbdbf/s/master "wercker status")](https://app.wercker.com/project/byKey/d99bbfc328db0183527cfb7e259fbdbf)
+[![Go Report Card](https://goreportcard.com/badge/github.com/skatsuta/monkey-compiler)](https://goreportcard.com/report/github.com/skatsuta/monkey-compiler)
 
 
 Monkey programming language compiler designed in [_Writing A Compiler In Go_ (Ball, T. 2018)](https://compilerbook.com). The book is  awesome and I believe every programmer who mainly uses dynamically typed languages such as Ruby or Python should read it.
