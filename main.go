@@ -3,15 +3,17 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
+	"github.com/skatsuta/monkey-compiler/compiler"
 	"github.com/skatsuta/monkey-compiler/eval"
 	"github.com/skatsuta/monkey-compiler/lexer"
 	"github.com/skatsuta/monkey-compiler/object"
 	"github.com/skatsuta/monkey-compiler/parser"
 	"github.com/skatsuta/monkey-compiler/repl"
+	"github.com/skatsuta/monkey-compiler/vm"
 )
 
 func main() {
@@ -24,13 +26,13 @@ func main() {
 	}
 
 	// Run a Monkey script
-	if err := runProgram(os.Args[1]); err != nil {
+	if err := runScript(os.Args[1]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func runProgram(filename string) error {
+func runScript(filename string) error {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("could not read %s: %v", filename, err)
@@ -38,16 +40,26 @@ func runProgram(filename string) error {
 
 	p := parser.New(lexer.New(string(data)))
 	program := p.ParseProgram()
-	if len(p.Errors()) > 0 {
-		return errors.New(p.Errors()[0])
+	if len(p.Errors()) != 0 {
+		return errors.New(strings.Join(p.Errors(), "\n"))
 	}
 
-	env := object.NewEnvironment()
-	result := eval.Eval(program, env)
-	if _, ok := result.(*object.Nil); ok {
-		return nil
+	// Process macros
+	macroEnv := object.NewEnvironment()
+	eval.DefineMacros(program, macroEnv)
+	expanded := eval.ExpandMacros(program, macroEnv)
+
+	// Compile the AST to bytecode
+	c := compiler.New()
+	if err := c.Compile(expanded); err != nil {
+		return fmt.Errorf("Woops! Compilation failed: %s", err)
 	}
 
-	_, err = io.WriteString(os.Stdout, result.Inspect()+"\n")
-	return err
+	// Run bytecode instructions
+	machine := vm.New(c.Bytecode())
+	if err := machine.Run(); err != nil {
+		return fmt.Errorf("Woops! Executing bytecode failed: %s", err)
+	}
+
+	return nil
 }
