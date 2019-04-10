@@ -68,6 +68,8 @@ const (
 	OpClosure
 	// OpGetFree is an opcode to retrieve a free variable on to the stack.
 	OpGetFree
+	// OpCurrentClosure is an opcode to self-reference the current closure.
+	OpCurrentClosure
 )
 
 // Definition represents the definition of an opcode.
@@ -77,35 +79,36 @@ type Definition struct {
 }
 
 var definitions = map[Opcode]*Definition{
-	OpConstant:      {Name: "OpConstant", OperandWidths: []int{2}},
-	OpPop:           {Name: "OpPop", OperandWidths: nil},
-	OpAdd:           {Name: "OpAdd", OperandWidths: nil},
-	OpSub:           {Name: "OpSub", OperandWidths: nil},
-	OpMul:           {Name: "OpMul", OperandWidths: nil},
-	OpDiv:           {Name: "OpDiv", OperandWidths: nil},
-	OpTrue:          {Name: "OpTrue", OperandWidths: nil},
-	OpFalse:         {Name: "OpFalse", OperandWidths: nil},
-	OpEqual:         {Name: "OpEqual", OperandWidths: nil},
-	OpNotEqual:      {Name: "OpNotEqual", OperandWidths: nil},
-	OpGreaterThan:   {Name: "OpGreaterThan", OperandWidths: nil},
-	OpMinus:         {Name: "OpMinus", OperandWidths: nil},
-	OpBang:          {Name: "OpBang", OperandWidths: nil},
-	OpJumpNotTruthy: {Name: "OpJumpNotTruthy", OperandWidths: []int{2}},
-	OpJump:          {Name: "OpJump", OperandWidths: []int{2}},
-	OpNil:           {Name: "OpNil", OperandWidths: nil},
-	OpSetGlobal:     {Name: "OpSetGlobal", OperandWidths: []int{2}},
-	OpGetGlobal:     {Name: "OpGetGlobal", OperandWidths: []int{2}},
-	OpArray:         {Name: "OpArray", OperandWidths: []int{2}},
-	OpHash:          {Name: "OpHash", OperandWidths: []int{2}},
-	OpIndex:         {Name: "OpIndex", OperandWidths: nil},
-	OpCall:          {Name: "OpCall", OperandWidths: []int{1}},
-	OpReturnValue:   {Name: "OpReturnValue", OperandWidths: nil},
-	OpReturn:        {Name: "OpReturn", OperandWidths: nil},
-	OpSetLocal:      {Name: "OpSetLocal", OperandWidths: []int{1}},
-	OpGetLocal:      {Name: "OpGetLocal", OperandWidths: []int{1}},
-	OpGetBuiltin:    {Name: "OpGetBuiltin", OperandWidths: []int{1}},
-	OpClosure:       {Name: "OpClosure", OperandWidths: []int{2, 1}},
-	OpGetFree:       {Name: "OpGetFree", OperandWidths: []int{1}},
+	OpConstant:       {Name: "OpConstant", OperandWidths: []int{2}},
+	OpPop:            {Name: "OpPop", OperandWidths: nil},
+	OpAdd:            {Name: "OpAdd", OperandWidths: nil},
+	OpSub:            {Name: "OpSub", OperandWidths: nil},
+	OpMul:            {Name: "OpMul", OperandWidths: nil},
+	OpDiv:            {Name: "OpDiv", OperandWidths: nil},
+	OpTrue:           {Name: "OpTrue", OperandWidths: nil},
+	OpFalse:          {Name: "OpFalse", OperandWidths: nil},
+	OpEqual:          {Name: "OpEqual", OperandWidths: nil},
+	OpNotEqual:       {Name: "OpNotEqual", OperandWidths: nil},
+	OpGreaterThan:    {Name: "OpGreaterThan", OperandWidths: nil},
+	OpMinus:          {Name: "OpMinus", OperandWidths: nil},
+	OpBang:           {Name: "OpBang", OperandWidths: nil},
+	OpJumpNotTruthy:  {Name: "OpJumpNotTruthy", OperandWidths: []int{2}},
+	OpJump:           {Name: "OpJump", OperandWidths: []int{2}},
+	OpNil:            {Name: "OpNil", OperandWidths: nil},
+	OpSetGlobal:      {Name: "OpSetGlobal", OperandWidths: []int{2}},
+	OpGetGlobal:      {Name: "OpGetGlobal", OperandWidths: []int{2}},
+	OpArray:          {Name: "OpArray", OperandWidths: []int{2}},
+	OpHash:           {Name: "OpHash", OperandWidths: []int{2}},
+	OpIndex:          {Name: "OpIndex", OperandWidths: nil},
+	OpCall:           {Name: "OpCall", OperandWidths: []int{1}},
+	OpReturnValue:    {Name: "OpReturnValue", OperandWidths: nil},
+	OpReturn:         {Name: "OpReturn", OperandWidths: nil},
+	OpSetLocal:       {Name: "OpSetLocal", OperandWidths: []int{1}},
+	OpGetLocal:       {Name: "OpGetLocal", OperandWidths: []int{1}},
+	OpGetBuiltin:     {Name: "OpGetBuiltin", OperandWidths: []int{1}},
+	OpClosure:        {Name: "OpClosure", OperandWidths: []int{2, 1}},
+	OpGetFree:        {Name: "OpGetFree", OperandWidths: []int{1}},
+	OpCurrentClosure: {Name: "OpCurrentClosure", OperandWidths: nil},
 }
 
 // Lookup performs a lookup for `op` in the definitions of opcodes.

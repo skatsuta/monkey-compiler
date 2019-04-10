@@ -603,6 +603,34 @@ func TestFunctionLiteralParsing(t *testing.T) {
 	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
 }
 
+func TestFunctionLiteralWithName(t *testing.T) {
+	input := "let myFunc = fn() { };"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	stmtLen := len(program.Statements)
+	if stmtLen != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d", 1, stmtLen)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.LetStatement. got=%T", program.Statements[0])
+	}
+
+	fn, ok := stmt.Value.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("stmt.Value is not *ast.FunctionLiteral. got=%T", stmt.Value)
+	}
+
+	if fn.Name != "myFunc" {
+		t.Fatalf("function literal name wrong. want=%q, got=%q", "myFunc", fn.Name)
+	}
+}
+
 func TestFunctionParameterParsing(t *testing.T) {
 	tests := []struct {
 		input    string

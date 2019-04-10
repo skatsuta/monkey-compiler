@@ -283,6 +283,12 @@ func (vm *VM) Run() error {
 			if err := vm.push(currentClosure.Free[freeIdx]); err != nil {
 				return err
 			}
+
+		case code.OpCurrentClosure:
+			currentClosure := frame.cl
+			if err := vm.push(currentClosure); err != nil {
+				return err
+			}
 		}
 
 		// Update current frame for the next interation
@@ -522,7 +528,11 @@ func (vm *VM) execCall(numArgs int) error {
 	case *object.Builtin:
 		return vm.callBuiltin(callee, numArgs)
 	default:
-		return fmt.Errorf("calling non-function and non-built-in: type %s", callee.Type())
+		var typ interface{}
+		if callee != nil {
+			typ = callee.Type()
+		}
+		return fmt.Errorf("calling non-function and non-built-in: type %v", typ)
 	}
 }
 

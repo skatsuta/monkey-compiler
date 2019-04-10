@@ -580,6 +580,8 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 			t.Fatalf("compiler error: %s", err)
 		}
 
+		// dumpObjects(complr.Bytecode().Constants)
+
 		vm := New(complr.Bytecode())
 		if err := vm.Run(); err != nil {
 			t.Fatalf("vm error: %s", err)
@@ -588,6 +590,21 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 		got := vm.LastPoppedStackElem()
 
 		testExpectedObject(t, tt.want, got)
+	}
+}
+
+func dumpObjects(objs []object.Object) {
+	for i, c := range objs {
+		fmt.Printf("Constant %d %p (%T):\n", i, c, c)
+
+		switch c := c.(type) {
+		case *object.CompiledFunction:
+			fmt.Printf("  Instructions:\n%s", c.Instructions)
+		case *object.Integer:
+			fmt.Printf("  Value: %d\n", c.Value)
+		}
+
+		fmt.Printf("\n")
 	}
 }
 

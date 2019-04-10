@@ -12,6 +12,8 @@ const (
 	BuiltinScope SymbolScope = "BUILTIN"
 	// FreeScope represents a scope for closures referencing free variables.
 	FreeScope SymbolScope = "FREE"
+	// FunctionScope represents a scope for self-referencing functions.
+	FunctionScope SymbolScope = "FUNCTION"
 )
 
 // Symbol is a symbol defined in a scope with an identifier (name).
@@ -60,6 +62,11 @@ func (s *SymbolTable) Define(name string) Symbol {
 // DefineBuiltin defines a built-in function with `name` at the `index`.
 func (s *SymbolTable) DefineBuiltin(index int, name string) Symbol {
 	return s.define(name, BuiltinScope, index)
+}
+
+// DefineFunctionName defines a built-in function with `name` at the `index`.
+func (s *SymbolTable) DefineFunctionName(name string) Symbol {
+	return s.define(name, FunctionScope, 0)
 }
 
 // defineFree defines a free symbol based on the `original` one.
