@@ -82,13 +82,15 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpPop)
 
 	case *ast.LetStatement:
+		// Define a symbol at first in order to make recursive functions work
+		sym := c.symTab.Define(node.Name.Value)
+
 		// Compile the right-hand side expression
 		if err := c.Compile(node.Value); err != nil {
 			return err
 		}
 
 		// Define an identifier as a symbol in a proper scope
-		sym := c.symTab.Define(node.Name.Value)
 		if sym.Scope == GlobalScope {
 			c.emit(code.OpSetGlobal, sym.Index)
 		} else {
