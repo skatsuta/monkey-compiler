@@ -268,10 +268,19 @@ func (vm *VM) Run() error {
 
 		case code.OpClosure:
 			constIdx := int(code.ReadUint16(insns[ip+1:]))
-			_ = code.ReadUint8(insns[ip+3:])
+			numFree := int(code.ReadUint8(insns[ip+3:]))
 			frame.ip += 3
 
-			if err := vm.pushClosure(constIdx); err != nil {
+			if err := vm.pushClosure(constIdx, numFree); err != nil {
+				return err
+			}
+
+		case code.OpGetFree:
+			freeIdx := code.ReadUint8(insns[ip+1:])
+			frame.ip++
+
+			currentClosure := frame.cl
+			if err := vm.push(currentClosure.Free[freeIdx]); err != nil {
 				return err
 			}
 		}
@@ -548,15 +557,22 @@ func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
 	return vm.push(result)
 }
 
-func (vm *VM) pushClosure(constIdx int) error {
+func (vm *VM) pushClosure(constIdx int, numFree int) error {
+	// Fetch a closure itself
 	c := vm.consts[constIdx]
 	fn, ok := c.(*object.CompiledFunction)
 	if !ok {
 		return fmt.Errorf("not a function: %+v", c)
 	}
 
-	cl := &object.Closure{Fn: fn}
-	return vm.push(cl)
+	// Fetch free variables
+	free := make([]object.Object, numFree)
+	copy(free, vm.stack[vm.sp-numFree:vm.sp])
+	vm.sp -= numFree
+
+	// Create a closure and push it on to the stack
+	closure := &object.Closure{Fn: fn, Free: free}
+	return vm.push(closure)
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
