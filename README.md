@@ -1,6 +1,6 @@
 # Monkey compiler
 
-Monkey programming language compiler designed in [_Writing An Compiler In Go_](https://https://compilerbook.com/).
+Monkey programming language compiler designed in [_Writing A Compiler In Go_](https://compilerbook.com/).
 
 
 ## Usage
