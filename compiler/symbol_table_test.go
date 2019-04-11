@@ -242,13 +242,13 @@ func TestResolveFree(t *testing.T) {
 			}
 		}
 
-		if gotLen, wantLen := len(tt.table.FreeSymbols), len(tt.wantFreeSymbols); gotLen != wantLen {
+		if gotLen, wantLen := len(tt.table.freeSymbols), len(tt.wantFreeSymbols); gotLen != wantLen {
 			t.Errorf("wrong number of free symbols. want=%d, got=%d", wantLen, gotLen)
 			continue
 		}
 
 		for i, want := range tt.wantFreeSymbols {
-			if got := tt.table.FreeSymbols[i]; got != want {
+			if got := tt.table.freeSymbols[i]; got != want {
 				t.Errorf("wrong free symbol. want=%+v, got=%+v", want, got)
 			}
 		}

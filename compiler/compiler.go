@@ -298,7 +298,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		// It is important to take the free symbols and the number of local bindings defined
 		// in the current scope from the symbol table *before* leaving the scope
-		freeSymbols := c.symTab.FreeSymbols
+		freeSymbols := c.symTab.freeSymbols
 		numLocals := c.symTab.numDefs
 
 		insns := c.leaveScope()

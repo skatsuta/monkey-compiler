@@ -25,7 +25,7 @@ type Symbol struct {
 
 // SymbolTable is a mapping table of identifiers (names) and defined symbols.
 type SymbolTable struct {
-	FreeSymbols []Symbol
+	freeSymbols []Symbol
 
 	outer *SymbolTable
 
@@ -41,7 +41,7 @@ func NewSymbolTable() *SymbolTable {
 // NewEnclosedSymbolTable creates a new symbol table with an outer one.
 func NewEnclosedSymbolTable(outer *SymbolTable) *SymbolTable {
 	return &SymbolTable{
-		FreeSymbols: make([]Symbol, 0),
+		freeSymbols: make([]Symbol, 0),
 		outer:       outer,
 		store:       make(map[string]Symbol),
 	}
@@ -71,9 +71,9 @@ func (s *SymbolTable) DefineFunctionName(name string) Symbol {
 
 // defineFree defines a free symbol based on the `original` one.
 func (s *SymbolTable) defineFree(original Symbol) Symbol {
-	s.FreeSymbols = append(s.FreeSymbols, original)
+	s.freeSymbols = append(s.freeSymbols, original)
 
-	return s.define(original.Name, FreeScope, len(s.FreeSymbols)-1)
+	return s.define(original.Name, FreeScope, len(s.freeSymbols)-1)
 }
 
 func (s *SymbolTable) define(name string, scope SymbolScope, index int) Symbol {
