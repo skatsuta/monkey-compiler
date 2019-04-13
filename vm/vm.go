@@ -89,12 +89,12 @@ func (vm *VM) LastPoppedStackElem() object.Object {
 // Run executes bytecode instructions.
 func (vm *VM) Run() error {
 	frame := vm.currentFrame()
+	insns := frame.Instructions()
 
-	for frame.ip < len(frame.Instructions())-1 {
+	for frame.ip < len(insns)-1 {
 		frame.ip++
 
 		ip := frame.ip
-		insns := frame.Instructions()
 		op := code.Opcode(insns[ip])
 
 		switch op {
@@ -291,8 +291,9 @@ func (vm *VM) Run() error {
 			}
 		}
 
-		// Update current frame for the next interation
+		// Update current frame and instructions for the next interation
 		frame = vm.currentFrame()
+		insns = frame.Instructions()
 	}
 
 	return nil
@@ -516,36 +517,71 @@ func (vm *VM) execComparison(op code.Opcode) error {
 	right := vm.pop()
 	left := vm.pop()
 
-	leftType := left.Type()
-	rightType := right.Type()
-	if leftType == object.IntegerType && rightType == object.IntegerType {
+	if isEitherType(object.FloatType, left, right) {
+		return vm.execFloatComparison(op, left, right)
+	} else if isBothType(object.IntegerType, left, right) {
 		return vm.execIntComparison(op, left, right)
 	}
 
+	var result bool
+
 	switch op {
 	case code.OpEqual:
-		return vm.push(nativeBoolToBooleanObject(left == right))
+		result = left == right
 	case code.OpNotEqual:
-		return vm.push(nativeBoolToBooleanObject(left != right))
+		result = left != right
 	default:
-		return fmt.Errorf("unknown operator %d: %s and %s", op, leftType, rightType)
+		return fmt.Errorf("unknown operator %d: %s and %s", op, left.Type(), right.Type())
 	}
+
+	return vm.push(nativeBoolToBooleanObject(result))
 }
 
 func (vm *VM) execIntComparison(op code.Opcode, left, right object.Object) error {
 	leftVal := left.(*object.Integer).Value
 	rightVal := right.(*object.Integer).Value
 
+	var result bool
+
 	switch op {
 	case code.OpEqual:
-		return vm.push(nativeBoolToBooleanObject(leftVal == rightVal))
+		result = leftVal == rightVal
 	case code.OpNotEqual:
-		return vm.push(nativeBoolToBooleanObject(leftVal != rightVal))
+		result = leftVal != rightVal
 	case code.OpGreaterThan:
-		return vm.push(nativeBoolToBooleanObject(leftVal > rightVal))
+		result = leftVal > rightVal
 	default:
 		return fmt.Errorf("unknown operator %d for integers", op)
 	}
+
+	return vm.push(nativeBoolToBooleanObject(result))
+}
+
+func (vm *VM) execFloatComparison(op code.Opcode, left, right object.Object) error {
+	leftVal, err := castToFloat(left)
+	if err != nil {
+		return err
+	}
+
+	rightVal, err := castToFloat(right)
+	if err != nil {
+		return err
+	}
+
+	var result bool
+
+	switch op {
+	case code.OpEqual:
+		result = leftVal == rightVal
+	case code.OpNotEqual:
+		result = leftVal != rightVal
+	case code.OpGreaterThan:
+		result = leftVal > rightVal
+	default:
+		return fmt.Errorf("unknown operator %d for floats", op)
+	}
+
+	return vm.push(nativeBoolToBooleanObject(result))
 }
 
 func (vm *VM) execCall(numArgs int) error {
@@ -625,13 +661,16 @@ func castToFloat(obj object.Object) (float64, error) {
 }
 
 func isFloatArithmeticRequired(op code.Opcode, left, right object.Object) bool {
-	return op == code.OpDiv || // Division always returns a floating-point number
-		left.Type() == object.FloatType ||
-		right.Type() == object.FloatType
+	// Division always returns a floating-point number
+	return op == code.OpDiv || isEitherType(object.FloatType, left, right)
 }
 
 func isBothType(typ object.Type, left, right object.Object) bool {
 	return left.Type() == typ && right.Type() == typ
+}
+
+func isEitherType(typ object.Type, left, right object.Object) bool {
+	return left.Type() == typ || right.Type() == typ
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
