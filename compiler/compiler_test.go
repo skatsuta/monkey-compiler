@@ -83,6 +83,72 @@ func TestIntegerArithmetic(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestFloatArithmetic(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input:      "1.1; 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpPop),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 + 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 - 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSub),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 * 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpMul),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "2.2 / 1.1",
+			wantConsts: []interface{}{2.2, 1.1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpDiv),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "-1.1",
+			wantConsts: []interface{}{1.1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpMinus),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func TestBooleanExpressions(t *testing.T) {
 	tests := []compilerTestCase{
 		{
@@ -1033,6 +1099,11 @@ func testConstants(want []interface{}, got []object.Object) error {
 				return fmt.Errorf("constant %d - testIntegerObject failed: %s", i, e)
 			}
 
+		case float64:
+			if e := testFloatObject(c, got[i]); e != nil {
+				return fmt.Errorf("constant %d - testFloatObject failed: %s", i, e)
+			}
+
 		case string:
 			if err := testStringObject(c, got[i]); err != nil {
 				return fmt.Errorf("constant %d - testStringObject failed: %s", i, err)
@@ -1064,6 +1135,19 @@ func testIntegerObject(want int64, got object.Object) error {
 
 	if result.Value != want {
 		return fmt.Errorf("object has wrong value. want=%d, got=%d", want, result.Value)
+	}
+
+	return nil
+}
+
+func testFloatObject(want float64, got object.Object) error {
+	result, ok := got.(*object.Float)
+	if !ok {
+		return fmt.Errorf("object is not Integer. got=%T (%#v)", got, got)
+	}
+
+	if result.Value != want {
+		return fmt.Errorf("object has wrong value. want=%v, got=%v", want, result.Value)
 	}
 
 	return nil

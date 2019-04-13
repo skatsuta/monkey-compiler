@@ -130,6 +130,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 
 			c.emit(code.OpGreaterThan)
+
 			return nil
 		}
 
@@ -239,6 +240,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.IntegerLiteral:
 		i := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(i))
+
+	case *ast.FloatLiteral:
+		f := &object.Float{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(f))
 
 	case *ast.StringLiteral:
 		s := &object.String{Value: node.Value}

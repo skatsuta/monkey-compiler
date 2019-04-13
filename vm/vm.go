@@ -382,33 +382,32 @@ func (vm *VM) execBangOp() error {
 }
 
 func (vm *VM) execMinusOp() error {
-	operand := vm.pop()
-
-	typ := operand.Type()
-	if typ != object.IntegerType {
-		return fmt.Errorf("unsupported type for negation: %s", typ)
+	switch operand := vm.pop().(type) {
+	case *object.Integer:
+		return vm.push(&object.Integer{Value: -operand.Value})
+	case *object.Float:
+		return vm.push(&object.Float{Value: -operand.Value})
+	default:
+		return fmt.Errorf("unsupported type for negation: %s", operand.Type())
 	}
-
-	val := operand.(*object.Integer).Value
-	return vm.push(&object.Integer{Value: -val})
 }
 
 func (vm *VM) execBinaryOp(op code.Opcode) error {
 	right := vm.pop()
 	left := vm.pop()
 
-	leftType := left.Type()
-	rightType := right.Type()
-
 	switch {
-	case leftType == object.IntegerType && rightType == object.IntegerType:
+	case isFloatArithmeticRequired(op, left, right):
+		return vm.execBinaryFloatOp(op, left, right)
+	case isBothType(object.IntegerType, left, right):
 		return vm.execBinaryIntOp(op, left, right)
-	case leftType == object.StringType && rightType == object.StringType:
+	case isBothType(object.StringType, left, right):
 		return vm.execBinaryStrOp(op, left, right)
 	default:
-		return fmt.Errorf("unsupported types for binary operation: %s and %s", leftType, rightType)
+		return fmt.Errorf(
+			"unsupported types for binary operation %d: %s and %s", op, left.Type(), right.Type(),
+		)
 	}
-
 }
 
 func (vm *VM) execBinaryIntOp(op code.Opcode, left, right object.Object) error {
@@ -431,6 +430,35 @@ func (vm *VM) execBinaryIntOp(op code.Opcode, left, right object.Object) error {
 	}
 
 	return vm.push(&object.Integer{Value: result})
+}
+
+func (vm *VM) execBinaryFloatOp(op code.Opcode, left, right object.Object) error {
+	leftVal, err := castToFloat(left)
+	if err != nil {
+		return err
+	}
+
+	rightVal, err := castToFloat(right)
+	if err != nil {
+		return err
+	}
+
+	var result float64
+
+	switch op {
+	case code.OpAdd:
+		result = leftVal + rightVal
+	case code.OpSub:
+		result = leftVal - rightVal
+	case code.OpMul:
+		result = leftVal * rightVal
+	case code.OpDiv:
+		result = leftVal / rightVal
+	default:
+		return fmt.Errorf("unknown float operator: %d", op)
+	}
+
+	return vm.push(&object.Float{Value: result})
 }
 
 func (vm *VM) execBinaryStrOp(op code.Opcode, left, right object.Object) error {
@@ -583,6 +611,27 @@ func (vm *VM) pushClosure(constIdx int, numFree int) error {
 	// Create a closure and push it on to the stack
 	closure := &object.Closure{Fn: fn, Free: free}
 	return vm.push(closure)
+}
+
+func castToFloat(obj object.Object) (float64, error) {
+	switch obj := obj.(type) {
+	case *object.Integer:
+		return float64(obj.Value), nil
+	case *object.Float:
+		return obj.Value, nil
+	default:
+		return 0.0, fmt.Errorf("could not cast to float: %s", obj.Type())
+	}
+}
+
+func isFloatArithmeticRequired(op code.Opcode, left, right object.Object) bool {
+	return op == code.OpDiv || // Division always returns a floating-point number
+		left.Type() == object.FloatType ||
+		right.Type() == object.FloatType
+}
+
+func isBothType(typ object.Type, left, right object.Object) bool {
+	return left.Type() == typ && right.Type() == typ
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {

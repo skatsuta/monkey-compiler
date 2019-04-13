@@ -23,8 +23,7 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"1 + 2", 3},
 		{"1 - 2", -1},
 		{"1 * 2", 2},
-		{"4 / 2", 2},
-		{"50 / 2 * 2 + 10 - 5", 55},
+		{"50 * 2 * 2 + 10 - 5", 205},
 		{"5 + 5 + 5 + 5 - 10", 10},
 		{"2 * 2 * 2 * 2 * 2", 32},
 		{"5 * 2 + 10", 20},
@@ -33,7 +32,39 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"-5", -5},
 		{"-10", -10},
 		{"-50 + 100 + -50", 0},
-		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
+		{"(5 + 10 * 2 + 15 - 3) * 2 + -10", 64},
+	}
+
+	runVMTests(t, tests)
+}
+
+func TestFloatArithmetic(t *testing.T) {
+	tests := []vmTestCase{
+		{"1.0", 1.0},
+		{"1.1", 1.1},
+		{"2.2", 2.2},
+		{"1.25 + 2.25", 3.5},
+		{"1.5 - 2.25", -0.75},
+		{"1.25 * 2.5", 3.125},
+		{"4.4 / 2.2", 2.0},
+		{"3.3 / 1.2", 2.75},
+		{"4 / 2", 2.0},
+		{"3 / 2", 1.5},
+		{"3.0 / 2.0", 1.5},
+		{"3.5 / 2", 1.75},
+		{"3 / 2.5", 1.2},
+		{"50 / 2 * 2 + 10 - 5", 55.0},
+		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50.0},
+		{"50 / 2 * 2.5 + 10.25 - 5.5", 67.25},
+		{"5.125 + 5.250 + 5.375 + 5.500 - 10.625", 10.625},
+		{"2 * 2 * 2 * 2 * 2.5", 40.0},
+		{"5.5 * 2.2 + 10", 22.1},
+		{"5.555 + 2.222 * 10.0", 27.775},
+		{"5.5 * (2.2 + 10.1)", 67.65},
+		{"-5.5", -5.5},
+		{"-10.0", -10.0},
+		{"-50.5 + 101 + -50.5", 0.0},
+		{"(5.5 + 10 * 2.2 + 15 / 3) * 2.2 + -10", 61.5},
 	}
 
 	runVMTests(t, tests)
@@ -650,6 +681,11 @@ func testExpectedObject(t *testing.T, want interface{}, got object.Object) {
 			t.Errorf("testIntegerObject failed: %s", err)
 		}
 
+	case float64:
+		if err := testFloatObject(want, got); err != nil {
+			t.Errorf("testFloatObject failed: %s", err)
+		}
+
 	case string:
 		if err := testStringObject(want, got); err != nil {
 			t.Errorf("testStringObject failed: %s", err)
@@ -738,6 +774,19 @@ func testIntegerObject(want int64, got object.Object) error {
 
 	if result.Value != want {
 		return fmt.Errorf("object has wrong value. want=%d, got=%d", want, result.Value)
+	}
+
+	return nil
+}
+
+func testFloatObject(want float64, got object.Object) error {
+	result, ok := got.(*object.Float)
+	if !ok {
+		return fmt.Errorf("object is not Float. got=%T (%+v)", got, got)
+	}
+
+	if result.Value != want {
+		return fmt.Errorf("object has wrong value. want=%v, got=%v", want, result.Value)
 	}
 
 	return nil
