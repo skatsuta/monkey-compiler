@@ -258,26 +258,28 @@ nil
 Here is a Fibonacci function implemented in Monkey:
 
 ```
-// fib.monkey
+// fibonacci.monkey
 
 let fib = fn(x) {
    if (x == 0) {
-     0;
-   } else {
-     if (x == 1) {
-       1;
-     } else {
-       fib(x - 1) + fib(x - 2);
-     }
+     return 0;
    }
+   if (x == 1) {
+     return 1;
+   }
+   fib(x - 1) + fib(x - 2);
 };
-puts(fib(15));
+
+let N = 15;
+puts(fib(N));
 ```
 
 Running the above script gives us:
 
 
 ```sh
-$ $GOPATH/bin/monkey-compiler fib.monkey
+$ $GOPATH/bin/monkey-compiler fibonacci.monkey
 610
 ```
+
+Other example Monkey scripts are also placed in `examples` directory.
