@@ -11,6 +11,7 @@ This implementation has added several features to the one implemented in the abo
 * Added support for running a single Monkey script file
 * Added support for single-line comments (`#`)
 * Added support for floating-point numbers and their arithmetic (`+`, `-`, `*`, `/`) and comparison (`<`, `>`, `==`, `!=`) operations 
+* Added support for "greater than or equal to" (`>=`) and "less than or equal to" (`<=`) comparison operators
 
 
 ## Prerequisites
@@ -65,7 +66,7 @@ Two number types are supported in this implementation: integers and floating-poi
 
 ### Arithmetic and comparison expressions
 
-You can do basic arithmetic and comparison operations for numbers, such as `+`, `-`, `*`, `/`, `<`, `>`, `==` and `!=`.
+You can do basic arithmetic and comparison operations for numbers, such as `+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `==` and `!=`.
 
 ```sh
 >> let a = 10;
