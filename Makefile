@@ -11,4 +11,4 @@ build:
 
 .PHONY: build-bench
 build-bench:
-	go build -o fib ./bench
+	go build -o bench-fib ./bench
