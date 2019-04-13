@@ -39,7 +39,7 @@ func (l *lexer) NextToken() token.Token {
 	l.skipWhitespace()
 
 	// skip comments
-	if l.ch == '/' && l.peekChar() == '/' {
+	if l.ch == '#' {
 		l.skipComment()
 	}
 

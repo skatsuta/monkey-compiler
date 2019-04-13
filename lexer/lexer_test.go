@@ -33,8 +33,8 @@ func TestNextToken(t *testing.T) {
 
 	{"foo": "bar"};
 
-	// comment
-	let a = 1; // inline comment
+	# comment
+	let a = 1; # inline comment
 
 	let b = 123.45;
 	let c = 0.678;
