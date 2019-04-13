@@ -6,8 +6,9 @@
 
 Monkey programming language compiler designed in [_Writing A Compiler In Go_ (Ball, T. 2018)](https://compilerbook.com). The book is  awesome and I believe every programmer who mainly uses dynamically typed languages such as Ruby or Python should read it.
 
-This implementation adds several features to the one implemented in the above book:
+This implementation has added several features to the one implemented in the above book:
 
+* Added support for running a single Monkey script file
 * Added support for single-line comments (`#`)
 * Added support for floating-point numbers and their arithmetic operations (`+`, `-`, `*`, `/`)
 
