@@ -6,9 +6,10 @@
 
 Monkey programming language compiler designed in [_Writing A Compiler In Go_ (Ball, T. 2018)](https://compilerbook.com). The book is  awesome and I believe every programmer who mainly uses dynamically typed languages such as Ruby or Python should read it.
 
-This implementation adds several features to the original compiler implemented in the above book:
+This implementation adds several features to the one implemented in the above book:
 
-* Add support for floating-point numbers and their arithmetic operations (`+`, `-`, `*`, `/`)
+* Added support for single-line comments (`#`)
+* Added support for floating-point numbers and their arithmetic operations (`+`, `-`, `*`, `/`)
 
 
 ## Prerequisites
@@ -233,6 +234,16 @@ Quote((2 + 2)) # Unevaluated code
 Quote(3)
 ```
 
+### Comments
+
+You can write single-line comments by starting with `#`. Comments begin with a hash mark (`#`) and continue to the end of the line. Thery are ignored by the compiler.
+
+```sh
+>> # This line is just a comment.
+>> let a = 1;  # This is an integer.
+1
+```
+
 ### Macros
 
 You can define macros using `macro` keyword. Note that macro definitions must return `Quote` objects generated from `quote` function.
@@ -258,7 +269,7 @@ nil
 Here is a Fibonacci function implemented in Monkey:
 
 ```
-// fibonacci.monkey
+# fibonacci.monkey
 
 let fib = fn(x) {
    if (x == 0) {
