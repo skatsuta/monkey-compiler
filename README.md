@@ -6,6 +6,10 @@
 
 Monkey programming language compiler designed in [_Writing A Compiler In Go_ (Ball, T. 2018)](https://compilerbook.com). The book is  awesome and I believe every programmer who mainly uses dynamically typed languages such as Ruby or Python should read it.
 
+This implementation adds several features to the original compiler implemented in the above book:
+
+* Add support for floating-point numbers and their arithmetic operations (`+`, `-`, `*`, `/`)
+
 
 ## Prerequisites
 
@@ -42,28 +46,34 @@ Hello, world!
 
 ## Getting started with Monkey
 
-### Integer types and variable bindings
+### Number types and variable bindings
 
-You can define variables using `let` keyword. Supported number types are integers.
+You can define variables using `let` keyword. `let` can create  bindings for any type of objects in Monkey.
+
+Two number types are supported in this implementation: integers and floating-point numbers.
 
 ```sh
 >> let a = 1;
 >> a
 1
+>> let b = 2.5;
+>> b
+2.5
 ```
 
 ### Arithmetic expressions
 
-You can do basic arithmetic operations for numbers, such as `+`, `-`, `*` and `/`. 
+You can do basic arithmetic operations for numbers, such as `+`, `-`, `*` and `/`.
 
 ```sh
 >> let a = 10;
 >> let b = a * 2;
 >> (a + b) / 2 - 3;
 12
->> let c = 2;
->> b + c
-22
+>> let c = 2.25;
+>> let d = -5.5;
+>> b + c * d
+7.625
 ```
 
 ### If expressions
