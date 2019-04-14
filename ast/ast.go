@@ -79,6 +79,39 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
+// AssignmentStatement represents an assignment statement.
+type AssignmentStatement struct {
+	Token token.Token // token.ASSIGN
+	Name  *Ident
+	Value Expression
+}
+
+func (as *AssignmentStatement) statementNode() {}
+
+// TokenLiteral returns a token literal of assignment statement.
+func (as *AssignmentStatement) TokenLiteral() string {
+	return as.Token.Literal
+}
+
+func (as *AssignmentStatement) String() string {
+	var out bytes.Buffer
+
+	// Variable name
+	out.WriteString(as.Name.String())
+
+	// Assignment symbol (equal sign)
+	out.WriteString(" = ")
+
+	// Right-hand side expression (value)
+	if as.Value != nil {
+		out.WriteString(as.Value.String())
+	}
+
+	out.WriteString(";")
+
+	return out.String()
+}
+
 // Ident represents an identifier.
 type Ident struct {
 	Token token.Token // the token.IDENT token
