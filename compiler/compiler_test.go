@@ -188,6 +188,26 @@ func TestBooleanExpressions(t *testing.T) {
 			},
 		},
 		{
+			input:      "1 >= 2",
+			wantConsts: []interface{}{1, 2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThanOrEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1 <= 2",
+			wantConsts: []interface{}{2, 1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThanOrEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
 			input:      "1 == 2",
 			wantConsts: []interface{}{1, 2},
 			wantInsns: []code.Instructions{
@@ -200,6 +220,66 @@ func TestBooleanExpressions(t *testing.T) {
 		{
 			input:      "1 != 2",
 			wantConsts: []interface{}{1, 2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpNotEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 > 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThan),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 < 2.2",
+			wantConsts: []interface{}{2.2, 1.1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThan),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 >= 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThanOrEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 <= 2.2",
+			wantConsts: []interface{}{2.2, 1.1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpGreaterThanOrEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 == 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpEqual),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:      "1.1 != 2.2",
+			wantConsts: []interface{}{1.1, 2.2},
 			wantInsns: []code.Instructions{
 				code.Make(code.OpConstant, 0),
 				code.Make(code.OpConstant, 1),

@@ -119,8 +119,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 	case *ast.InfixExpression:
-		// Reverse the two operands if the operator is "<" (less than)
-		if node.Operator == "<" {
+		opr := node.Operator
+
+		// Reverse the two operands if the operator is "<" (less than) or "<=" (less than or equal)
+		if opr == "<" || opr == "<=" {
 			if err := c.Compile(node.Right); err != nil {
 				return err
 			}
@@ -129,7 +131,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 
-			c.emit(code.OpGreaterThan)
+			if opr == "<" {
+				c.emit(code.OpGreaterThan)
+			} else {
+				c.emit(code.OpGreaterThanOrEqual)
+			}
 
 			return nil
 		}
@@ -142,7 +148,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
-		switch node.Operator {
+		switch opr {
 		case "+":
 			c.emit(code.OpAdd)
 		case "-":
@@ -153,12 +159,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpDiv)
 		case ">":
 			c.emit(code.OpGreaterThan)
+		case ">=":
+			c.emit(code.OpGreaterThanOrEqual)
 		case "==":
 			c.emit(code.OpEqual)
 		case "!=":
 			c.emit(code.OpNotEqual)
 		default:
-			return fmt.Errorf("unknown operator: %s", node.Operator)
+			return fmt.Errorf("unknown operator: %s", opr)
 		}
 
 	case *ast.IndexExpression:

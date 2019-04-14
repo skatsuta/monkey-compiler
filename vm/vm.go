@@ -177,7 +177,7 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpGreaterThanOrEqual:
 			if err := vm.execComparison(op); err != nil {
 				return err
 			}
@@ -550,6 +550,8 @@ func (vm *VM) execIntComparison(op code.Opcode, left, right object.Object) error
 		result = leftVal != rightVal
 	case code.OpGreaterThan:
 		result = leftVal > rightVal
+	case code.OpGreaterThanOrEqual:
+		result = leftVal >= rightVal
 	default:
 		return fmt.Errorf("unknown operator %d for integers", op)
 	}
@@ -577,6 +579,8 @@ func (vm *VM) execFloatComparison(op code.Opcode, left, right object.Object) err
 		result = leftVal != rightVal
 	case code.OpGreaterThan:
 		result = leftVal > rightVal
+	case code.OpGreaterThanOrEqual:
+		result = leftVal >= rightVal
 	default:
 		return fmt.Errorf("unknown operator %d for floats", op)
 	}

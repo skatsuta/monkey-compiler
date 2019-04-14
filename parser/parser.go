@@ -34,6 +34,8 @@ var precedences = map[token.Type]int{
 	token.NEQ:      EQUALS,
 	token.LT:       LESSGREATER,
 	token.GT:       LESSGREATER,
+	token.LE:       LESSGREATER,
+	token.GE:       LESSGREATER,
 	token.PLUS:     SUM,
 	token.MINUS:    SUM,
 	token.SLASH:    PRODUCT,
@@ -92,6 +94,8 @@ func New(l lexer.Lexer) *Parser {
 		token.NEQ:      p.parseInfixExpression,
 		token.LT:       p.parseInfixExpression,
 		token.GT:       p.parseInfixExpression,
+		token.LE:       p.parseInfixExpression,
+		token.GE:       p.parseInfixExpression,
 		token.LPAREN:   p.parseCallExpression,
 		token.LBRACKET: p.parseIndexExpression,
 	}
@@ -310,18 +314,15 @@ func (p *Parser) curPrecedence() int {
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
-	expr := &ast.InfixExpression{
-		Token:    p.curToken,
-		Operator: p.curToken.Literal,
-		Left:     left,
-	}
-
+	curTok := p.curToken
 	prec := p.curPrecedence()
-
 	p.nextToken()
-
-	expr.Right = p.parseExpression(prec)
-	return expr
+	return &ast.InfixExpression{
+		Token:    curTok,
+		Operator: curTok.Literal,
+		Left:     left,
+		Right:    p.parseExpression(prec),
+	}
 }
 
 func (p *Parser) parseBoolean() ast.Expression {

@@ -78,6 +78,10 @@ func TestBooleanExpressions(t *testing.T) {
 		{"1 > 2", false},
 		{"1 < 1", false},
 		{"1 > 1", false},
+		{"1 <= 1", true},
+		{"1 >= 1", true},
+		{"2 <= 1", false},
+		{"1 >= 2", false},
 		{"1 == 1", true},
 		{"1 != 1", false},
 		{"1 == 2", false},
@@ -86,6 +90,10 @@ func TestBooleanExpressions(t *testing.T) {
 		{"1.1 > 2.2", false},
 		{"1.1 < 1.1", false},
 		{"1.1 > 1.1", false},
+		{"1.1 <= 1.1", true},
+		{"1.1 >= 1.1", true},
+		{"2.2 <= 1.1", false},
+		{"1.1 >= 2.2", false},
 		{"1.1 == 1.1", true},
 		{"1.1 != 1.1", false},
 		{"1.1 == 2.2", false},
@@ -99,10 +107,18 @@ func TestBooleanExpressions(t *testing.T) {
 		{"(1 < 2) == false", false},
 		{"(1 > 2) == true", false},
 		{"(1 > 2) == false", true},
+		{"(1 <= 2) == true", true},
+		{"(1 <= 2) == false", false},
+		{"(1 >= 2) == true", false},
+		{"(1 >= 2) == false", true},
 		{"(1.1 < 2.2) == true", true},
 		{"(1.1 < 2.2) == false", false},
 		{"(1.1 > 2.2) == true", false},
 		{"(1.1 > 2.2) == false", true},
+		{"(1.1 <= 2.2) == true", true},
+		{"(1.1 <= 2.2) == false", false},
+		{"(1.1 >= 2.2) == true", false},
+		{"(1.1 >= 2.2) == false", true},
 		{"!true", false},
 		{"!false", true},
 		{"!5", false},
@@ -130,6 +146,10 @@ func TestConditionals(t *testing.T) {
 		{"if (1 < 2) { 10 } else { 20 }", 10},
 		{"if (1 > 2) { 10 } else { 20 }", 20},
 		{"if (1 > 2) { 10 }", Nil},
+		{"if (1 <= 2) { 10 }", 10},
+		{"if (1 <= 2) { 10 } else { 20 }", 10},
+		{"if (1 >= 2) { 10 } else { 20 }", 20},
+		{"if (1 >= 2) { 10 }", Nil},
 		{"if (false) { 10 }", Nil},
 	}
 
@@ -651,7 +671,7 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 			t.Fatalf("compiler error: %s", err)
 		}
 
-		// dumpObjects(complr.Bytecode().Constants)
+		dumpBytecode(complr.Bytecode())
 
 		vm := New(complr.Bytecode())
 		if err := vm.Run(); err != nil {
@@ -664,8 +684,14 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 	}
 }
 
-func dumpObjects(objs []object.Object) {
-	for i, c := range objs {
+func dumpBytecode(bytecode *compiler.Bytecode) {
+	fmt.Println("===== Instructions =====")
+
+	fmt.Println(bytecode.Instructions)
+
+	fmt.Println("===== Constants =====")
+
+	for i, c := range bytecode.Constants {
 		fmt.Printf("Constant %d %p (%T):\n", i, c, c)
 
 		switch c := c.(type) {
@@ -674,9 +700,9 @@ func dumpObjects(objs []object.Object) {
 		case *object.Integer:
 			fmt.Printf("  Value: %d\n", c.Value)
 		}
-
-		fmt.Printf("\n")
 	}
+
+	fmt.Printf("\n")
 }
 
 func parse(input string) *ast.Program {

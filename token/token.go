@@ -34,6 +34,10 @@ const (
 	LT = "<"
 	// GT is a token ype for 'greater than' operator.
 	GT = ">"
+	// LE is a token type for 'less than or equal to' operator.
+	LE = "<="
+	// GE is a token type for 'greater than or equal to' operator.
+	GE = ">="
 	// EQ is a token type for equality operator.
 	EQ = "=="
 	// NEQ is a token type for not equality operator.

@@ -23,6 +23,8 @@ func TestNextToken(t *testing.T) {
 		return false;
 	}
 
+	10 <= 11;
+	10 >= 9;
 	10 == 10;
 	10 != 9;
 
@@ -112,6 +114,14 @@ func TestNextToken(t *testing.T) {
 		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
+		{token.INT, "10"},
+		{token.LE, "<="},
+		{token.INT, "11"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "10"},
+		{token.GE, ">="},
+		{token.INT, "9"},
+		{token.SEMICOLON, ";"},
 		{token.INT, "10"},
 		{token.EQ, "=="},
 		{token.INT, "10"},
