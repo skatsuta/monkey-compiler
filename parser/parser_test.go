@@ -218,12 +218,13 @@ func TestFloatExpression(t *testing.T) {
 
 func TestParsingPrefixExpressions(t *testing.T) {
 	tests := []struct {
-		input        string
-		operator     string
-		integerValue interface{}
+		input    string
+		operator string
+		want     interface{}
 	}{
 		{"!5;", "!", 5},
 		{"-15;", "-", 15},
+		{"-15.5;", "-", 15.5},
 		{"!true", "!", true},
 		{"!false", "!", false},
 	}
@@ -253,7 +254,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 			t.Errorf("exp.operator is not %s. got=%s", tt.operator, exp.Operator)
 		}
 
-		testLiteralExpression(t, exp.Right, tt.integerValue)
+		testLiteralExpression(t, exp.Right, tt.want)
 	}
 }
 
