@@ -103,6 +103,8 @@ func TestBooleanExpressions(t *testing.T) {
 		{"true == false", false},
 		{"true != false", true},
 		{"false != true", true},
+		{"true && false", false},
+		{"false || true", true},
 		{"(1 < 2) == true", true},
 		{"(1 < 2) == false", false},
 		{"(1 > 2) == true", false},
@@ -131,6 +133,25 @@ func TestBooleanExpressions(t *testing.T) {
 		{"!(if (false) { 5.5 })", true},
 		{"if ((if (false) { 10 })) { 10 } else { 20 }", 20},
 		{"if ((if (false) { 10.5 })) { 10 } else { 20.5 }", 20.5},
+	}
+
+	runVMTests(t, tests)
+}
+
+func TestLogicalExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"1 && 2", 2},
+		{"\"a\" && 1", 1},
+		{"false && 1", false},
+		{"1 || 2", 1},
+		{"\"a\" || 1", "a"},
+		{"true || 1", true},
+		{"1.1 && 2.2", 2.2},
+		{"false && 1.1", false},
+		{"1.1 || 2.2", 1.1},
+		{"true || 1", true},
+		{"true && false", false},
+		{"false || true", true},
 	}
 
 	runVMTests(t, tests)
@@ -671,7 +692,7 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 			t.Fatalf("compiler error: %s", err)
 		}
 
-		dumpBytecode(complr.Bytecode())
+		// dumpBytecode(complr.Bytecode())
 
 		vm := New(complr.Bytecode())
 		if err := vm.Run(); err != nil {

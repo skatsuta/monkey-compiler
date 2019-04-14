@@ -28,6 +28,9 @@ func TestNextToken(t *testing.T) {
 	10 == 10;
 	10 != 9;
 
+	true && false;
+	true || false;
+
 	"foobar";
 	"foo bar";
 
@@ -129,6 +132,14 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "10"},
 		{token.NEQ, "!="},
 		{token.INT, "9"},
+		{token.SEMICOLON, ";"},
+		{token.TRUE, "true"},
+		{token.AND, "&&"},
+		{token.FALSE, "false"},
+		{token.SEMICOLON, ";"},
+		{token.TRUE, "true"},
+		{token.OR, "||"},
+		{token.FALSE, "false"},
 		{token.SEMICOLON, ";"},
 		{token.STRING, "foobar"},
 		{token.SEMICOLON, ";"},

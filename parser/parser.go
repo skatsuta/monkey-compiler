@@ -13,6 +13,10 @@ const (
 	_ int = iota
 	// LOWEST represents the lowest precedence.
 	LOWEST
+	// OR represents precedence of logical OR.
+	OR
+	// AND represents precedence of logical AND.
+	AND
 	// EQUALS represents precedence of equals.
 	EQUALS // ==
 	// LESSGREATER represents precedence of less than or greater than.
@@ -30,6 +34,8 @@ const (
 )
 
 var precedences = map[token.Type]int{
+	token.OR:       OR,
+	token.AND:      AND,
 	token.EQ:       EQUALS,
 	token.NEQ:      EQUALS,
 	token.LT:       LESSGREATER,
@@ -96,6 +102,8 @@ func New(l lexer.Lexer) *Parser {
 		token.GT:       p.parseInfixExpression,
 		token.LE:       p.parseInfixExpression,
 		token.GE:       p.parseInfixExpression,
+		token.AND:      p.parseInfixExpression,
+		token.OR:       p.parseInfixExpression,
 		token.LPAREN:   p.parseCallExpression,
 		token.LBRACKET: p.parseIndexExpression,
 	}

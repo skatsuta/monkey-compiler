@@ -35,6 +35,10 @@ const (
 	// OpGreaterThanOrEqual is an opcode to check the second topmost element is greater than or
 	// equal to the first.
 	OpGreaterThanOrEqual
+	// OpAnd is an opcode for logical AND.
+	OpAnd
+	// OpOr is an opcode for logical OR.
+	OpOr
 	// OpMinus is an opcode to negate integers.
 	OpMinus
 	// OpBang is an opcode to negate booleans.
@@ -94,6 +98,8 @@ var definitions = map[Opcode]*Definition{
 	OpNotEqual:           {Name: "OpNotEqual", OperandWidths: nil},
 	OpGreaterThan:        {Name: "OpGreaterThan", OperandWidths: nil},
 	OpGreaterThanOrEqual: {Name: "OpGreaterThanOrEqual", OperandWidths: nil},
+	OpAnd:                {Name: "OpAnd", OperandWidths: nil},
+	OpOr:                 {Name: "OpOr", OperandWidths: nil},
 	OpMinus:              {Name: "OpMinus", OperandWidths: nil},
 	OpBang:               {Name: "OpBang", OperandWidths: nil},
 	OpJumpNotTruthy:      {Name: "OpJumpNotTruthy", OperandWidths: []int{2}},

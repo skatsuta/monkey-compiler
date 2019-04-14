@@ -182,6 +182,11 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpAnd, code.OpOr:
+			if err := vm.execLogicalOp(op); err != nil {
+				return err
+			}
+
 		case code.OpJump:
 			pos := int(code.ReadUint16(insns[ip+1:]))
 			// Since we're in a loop that increments `ip` with each iteration, we need to set `ip`
@@ -586,6 +591,26 @@ func (vm *VM) execFloatComparison(op code.Opcode, left, right object.Object) err
 	}
 
 	return vm.push(nativeBoolToBooleanObject(result))
+}
+
+func (vm *VM) execLogicalOp(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+
+	switch op {
+	case code.OpAnd:
+		if isTruthy(left) {
+			return vm.push(right)
+		}
+		return vm.push(left)
+	case code.OpOr:
+		if isTruthy(left) {
+			return vm.push(left)
+		}
+		return vm.push(right)
+	default:
+		return fmt.Errorf("unknow logical operator: %d", op)
+	}
 }
 
 func (vm *VM) execCall(numArgs int) error {

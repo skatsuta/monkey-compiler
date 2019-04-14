@@ -87,6 +87,14 @@ func (l *lexer) NextToken() token.Token {
 		} else {
 			tok = newToken(token.GT, l.ch)
 		}
+	case '&':
+		if l.peekChar() == '&' {
+			tok = l.readTwoCharToken(token.AND)
+		}
+	case '|':
+		if l.peekChar() == '|' {
+			tok = l.readTwoCharToken(token.OR)
+		}
 	case '{':
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':

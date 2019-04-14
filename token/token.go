@@ -42,6 +42,10 @@ const (
 	EQ = "=="
 	// NEQ is a token type for not equality operator.
 	NEQ = "!="
+	// AND is a token type for binary AND logical operator.
+	AND = "&&"
+	// OR is a token type for binary OR logical operator.
+	OR = "||"
 
 	// COMMA is a token type for commas.
 	COMMA = ","
