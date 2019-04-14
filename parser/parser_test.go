@@ -40,20 +40,6 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
-func checkParserErrors(t *testing.T, p *Parser) {
-	errors := p.Errors()
-	length := len(errors)
-	if length == 0 {
-		return
-	}
-
-	t.Errorf("parser has %d errors", length)
-	for _, msg := range errors {
-		t.Errorf("parser error: %q", msg)
-	}
-	t.FailNow()
-}
-
 func TestLetStatementErrors(t *testing.T) {
 	tests := []struct {
 		input string
@@ -93,6 +79,58 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) {
 
 	if letStmt.Name.TokenLiteral() != name {
 		t.Errorf("s.Name not '%s'. got=%s", name, letStmt.Name)
+	}
+}
+
+func TestAssignmentStatements(t *testing.T) {
+	tests := []struct {
+		input         string
+		expectedIdent string
+		expectedValue interface{}
+	}{
+		{"x = 5;", "x", 5},
+		{"y = true;", "y", true},
+		{"foobar = y;", "foobar", "y"},
+		{"x = 5; x = 6;", "x", 6},
+		{"a = 5.5; b = 6.6;", "b", 6.6},
+		{"y = true; y = false;", "y", false},
+		{"foobar = y; foobar = z;", "foobar", "z"},
+	}
+
+	for _, tt := range tests {
+		p := New(lexer.New(tt.input))
+
+		program := p.ParseProgram()
+		if program == nil {
+			t.Fatalf("ParseProgram() returned nil")
+		}
+		l := len(program.Statements)
+		if l < 1 && l > 2 {
+			t.Fatalf("program.Statements does not contain one or two statements. got=%d", l)
+		}
+		checkParserErrors(t, p)
+
+		// Check the last statement
+		stmt := program.Statements[l-1]
+		testAssignmentStatement(t, stmt, tt.expectedIdent)
+
+		val := stmt.(*ast.AssignmentStatement).Value
+		testLiteralExpression(t, val, tt.expectedValue)
+	}
+}
+
+func testAssignmentStatement(t *testing.T, s ast.Statement, name string) {
+	stmt, ok := s.(*ast.AssignmentStatement)
+	if !ok {
+		t.Errorf("statement not *ast.AssignmentStatement. got=%T", s)
+	}
+
+	if stmt.Name.Value != name {
+		t.Errorf("stmt.Name.Value not %q. got=%q", name, stmt.Name.Value)
+	}
+
+	if stmt.Name.TokenLiteral() != name {
+		t.Errorf("stmt.Name not %q. got=%q", name, stmt.Name)
 	}
 }
 
@@ -948,4 +986,18 @@ func TestMacroLiteralParsing(t *testing.T) {
 	}
 
 	testInfixExpression(t, bodyStmt.Expression, "x", "+", "y")
+}
+
+func checkParserErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	length := len(errors)
+	if length == 0 {
+		return
+	}
+
+	t.Errorf("parser has %d errors", length)
+	for _, msg := range errors {
+		t.Errorf("parser error: %q", msg)
+	}
+	t.FailNow()
 }

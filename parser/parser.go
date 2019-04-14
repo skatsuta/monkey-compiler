@@ -166,10 +166,12 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	switch p.curToken.Type {
-	case token.LET:
+	switch {
+	case p.curTokenIs(token.LET):
 		return p.parseLetStatement()
-	case token.RETURN:
+	case p.curTokenIs(token.IDENT) && p.peekTokenIs(token.ASSIGN):
+		return p.parseAssignmentStatement()
+	case p.curTokenIs(token.RETURN):
 		return p.parseReturnStatement()
 	default:
 		return p.parseExpressionStatement()
@@ -196,6 +198,41 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	stmt.Value = p.parseExpression(LOWEST)
 
+	if fl, ok := stmt.Value.(*ast.FunctionLiteral); ok {
+		fl.Name = stmt.Name.Value
+	}
+
+	for p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseAssignmentStatement() *ast.AssignmentStatement {
+	// Parse an identifier
+	stmt := &ast.AssignmentStatement{
+		Name: &ast.Ident{
+			Token: p.curToken,
+			Value: p.curToken.Literal,
+		},
+	}
+
+	// Advance the cursor to '=' sign
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	// Store the '=' sign
+	stmt.Token = p.curToken
+
+	// Advance the cursor to the right-hand side (RHS) expression
+	p.nextToken()
+
+	// Parse the RHS expression
+	stmt.Value = p.parseExpression(LOWEST)
+
+	// Give an anonymous closure a variable name
 	if fl, ok := stmt.Value.(*ast.FunctionLiteral); ok {
 		fl.Name = stmt.Name.Value
 	}
