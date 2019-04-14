@@ -12,6 +12,7 @@ This implementation has added several features to the one implemented in the abo
 * Added support for single-line comments (`#`)
 * Added support for floating-point numbers and their arithmetic (`+`, `-`, `*`, `/`) and comparison (`<`, `>`, `==`, `!=`) operations 
 * Added support for "greater than or equal to" (`>=`) and "less than or equal to" (`<=`) comparison operators
+* Added support for logical AND (`&&`) and OR (`||`) operators
 
 
 ## Prerequisites
@@ -66,7 +67,7 @@ Two number types are supported in this implementation: integers and floating-poi
 
 ### Arithmetic and comparison expressions
 
-You can do basic arithmetic and comparison operations for numbers, such as `+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `==` and `!=`.
+You can do basic arithmetic and comparison operations for numbers, such as `+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `==`, `!=`, `&&` and `||`.
 
 ```sh
 >> let a = 10;
@@ -93,6 +94,9 @@ You can use `if` and `else` keywords for conditional expressions. The last value
 >> let c = if (b > a) { 99 } else { 100 };
 >> c
 99
+>> let d = if (b > a && c < b) { 199 } else { 200 };
+>> d
+200
 ```
 
 ### Functions and closures
