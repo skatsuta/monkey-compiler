@@ -45,6 +45,8 @@ func TestNextToken(t *testing.T) {
 	let c = 0.678;
 	let d = 9.0;
 
+	a = 2;
+
 	macro(x, y) { x + y; };
 	`
 
@@ -176,6 +178,10 @@ func TestNextToken(t *testing.T) {
 		{token.IDENT, "d"},
 		{token.ASSIGN, "="},
 		{token.FLOAT, "9.0"},
+		{token.SEMICOLON, ";"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.INT, "2"},
 		{token.SEMICOLON, ";"},
 		{token.MACRO, "macro"},
 		{token.LPAREN, "("},
