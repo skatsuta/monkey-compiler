@@ -26,7 +26,7 @@ type Compiler struct {
 	// consts is a slice that serves as a constant pool.
 	consts []object.Object
 
-	symTab *SymbolTable
+	symTbl *SymbolTable
 
 	scopes   []CompilationScope
 	scopeIdx int
@@ -34,25 +34,25 @@ type Compiler struct {
 
 // New creates a new Compiler.
 func New() *Compiler {
-	symTab := NewSymbolTable()
+	symTbl := NewSymbolTable()
 
 	// Define built-in functions
 	for i, builtin := range object.Builtins {
-		symTab.DefineBuiltin(i, builtin.Name)
+		symTbl.DefineBuiltin(i, builtin.Name)
 	}
 
-	return NewWithState(symTab, make([]object.Object, 0))
+	return NewWithState(symTbl, make([]object.Object, 0))
 }
 
 // NewWithState creates a new Compiler with a given symbol table and constant pool.
-func NewWithState(symTab *SymbolTable, consts []object.Object) *Compiler {
+func NewWithState(symTbl *SymbolTable, consts []object.Object) *Compiler {
 	mainScope := CompilationScope{
 		insns: make(code.Instructions, 0),
 	}
 
 	return &Compiler{
 		consts: consts,
-		symTab: symTab,
+		symTbl: symTbl,
 		scopes: []CompilationScope{mainScope},
 	}
 }
@@ -83,7 +83,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 	case *ast.LetStatement:
 		// Define a symbol at first in order to make recursive functions work
-		sym := c.symTab.Define(node.Name.Value)
+		sym := c.symTbl.Define(node.Name.Value)
 
 		// Compile the right-hand side expression
 		if err := c.Compile(node.Value); err != nil {
@@ -235,7 +235,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpCall, len(node.Arguments))
 
 	case *ast.Ident:
-		sym, ok := c.symTab.Resolve(node.Value)
+		sym, ok := c.symTbl.Resolve(node.Value)
 		if !ok {
 			return fmt.Errorf("undefined variable %q", node.Value)
 		}
@@ -295,11 +295,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.enterScope()
 
 		if node.Name != "" {
-			c.symTab.DefineFunctionName(node.Name)
+			c.symTbl.DefineFunctionName(node.Name)
 		}
 
 		for _, p := range node.Parameters {
-			c.symTab.Define(p.Value)
+			c.symTbl.Define(p.Value)
 		}
 
 		if err := c.Compile(node.Body); err != nil {
@@ -315,8 +315,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		// It is important to take the free symbols and the number of local bindings defined
 		// in the current scope from the symbol table *before* leaving the scope
-		freeSymbols := c.symTab.freeSymbols
-		numLocals := c.symTab.numDefs
+		freeSymbols := c.symTbl.freeSymbols
+		numLocals := c.symTbl.numDefs
 
 		insns := c.leaveScope()
 
@@ -412,7 +412,7 @@ func (c *Compiler) enterScope() {
 	c.scopeIdx++
 
 	// Create a new nested symbol table
-	c.symTab = NewEnclosedSymbolTable(c.symTab)
+	c.symTbl = NewEnclosedSymbolTable(c.symTbl)
 }
 
 func (c *Compiler) leaveScope() code.Instructions {
@@ -421,7 +421,7 @@ func (c *Compiler) leaveScope() code.Instructions {
 	c.scopeIdx--
 
 	// Restore the outer symbol table
-	c.symTab = c.symTab.outer
+	c.symTbl = c.symTbl.outer
 
 	return insns
 }

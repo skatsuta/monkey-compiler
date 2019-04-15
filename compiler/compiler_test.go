@@ -692,7 +692,7 @@ func TestCompilerScopes(t *testing.T) {
 	if c.scopeIdx != 0 {
 		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, c.scopeIdx)
 	}
-	globalSymTab := c.symTab
+	globalSymTab := c.symTbl
 
 	c.emit(code.OpMul)
 
@@ -712,7 +712,7 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("lastInsn.Opcode wrong. want=%d, got=%d", code.OpSub, last.Opcode)
 	}
 
-	if c.symTab.outer != globalSymTab {
+	if c.symTbl.outer != globalSymTab {
 		t.Errorf("compiler did not enclose global symbol table")
 	}
 
@@ -721,10 +721,10 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("scopeIdx wrong. want=%d, got=%d", 0, c.scopeIdx)
 	}
 
-	if c.symTab != globalSymTab {
+	if c.symTbl != globalSymTab {
 		t.Errorf("compiler did not restore global symbol table")
 	}
-	if c.symTab.hasOuter() {
+	if c.symTbl.hasOuter() {
 		t.Errorf("compiler modified global symbol table incorrectly")
 	}
 
