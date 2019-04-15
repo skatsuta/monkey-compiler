@@ -85,16 +85,23 @@ func (s *SymbolTable) define(name string, scope SymbolScope, index int) Symbol {
 // Resolve resolves an identifier and returns a defined symbol and `true` if any.
 // If the identifier is not found anywhere within a chain of symbol tables, it returns an empty
 // symbol and `false`.
-func (s *SymbolTable) Resolve(name string) (Symbol, bool) {
-	if sym, exists := s.store[name]; exists || !s.hasOuter() {
+func (s *SymbolTable) Resolve(name string) (sym Symbol, exists bool) {
+	if sym, exists = s.store[name]; exists || !s.hasOuter() {
 		return sym, exists
 	}
 
-	sym, exists := s.outer.Resolve(name)
+	sym, exists = s.outer.Resolve(name)
 	if exists && (sym.Scope == LocalScope || sym.Scope == FreeScope) {
 		// Define an outer local or free variable as a free variable in the current scope
 		sym = s.defineFree(sym)
 	}
+	return sym, exists
+}
+
+// ResolveCurrentScope resolves an identifier within the current scope and returns a defined
+// symbol and `true` if it is defined, otherwise returns an empty symbol and `false`.
+func (s *SymbolTable) ResolveCurrentScope(name string) (sym Symbol, exists bool) {
+	sym, exists = s.store[name]
 	return sym, exists
 }
 

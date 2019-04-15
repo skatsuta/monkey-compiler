@@ -153,6 +153,29 @@ func TestResolveNestedLocal(t *testing.T) {
 	}
 }
 
+func TestResolveCurrentScopeGlobal(t *testing.T) {
+	global := NewSymbolTable()
+	global.Define("a")
+	global.Define("b")
+
+	wantSymbols := []Symbol{
+		{Name: "a", Scope: GlobalScope, Index: 0},
+		{Name: "b", Scope: GlobalScope, Index: 1},
+	}
+
+	for _, want := range wantSymbols {
+		got, ok := global.ResolveCurrentScope(want.Name)
+		if !ok {
+			t.Errorf("name %q not resolvable", got.Name)
+			continue
+		}
+
+		if got != want {
+			t.Errorf("expected %q to resolve to %#v, but got %#v", want.Name, want, got)
+		}
+	}
+}
+
 func TestDefineResolveBuiltins(t *testing.T) {
 	global := NewSymbolTable()
 	firstLocal := NewEnclosedSymbolTable(global)
@@ -294,6 +317,76 @@ func TestResolveUnresolvable(t *testing.T) {
 	}
 }
 
+func TestResolveCurrentScopeUnresolvable(t *testing.T) {
+	global := NewSymbolTable()
+	global.Define("a")
+	global.Define("b")
+
+	firstLocal := NewEnclosedSymbolTable(global)
+	firstLocal.Define("c")
+	firstLocal.Define("d")
+
+	secondLocal := NewEnclosedSymbolTable(firstLocal)
+	secondLocal.Define("e")
+	secondLocal.Define("f")
+
+	tests := []struct {
+		table       *SymbolTable
+		wantSymbols []Symbol
+	}{
+		{
+			table: firstLocal,
+			wantSymbols: []Symbol{
+				{Name: "c", Scope: LocalScope, Index: 0},
+				{Name: "d", Scope: LocalScope, Index: 1},
+			},
+		},
+		{
+			table: secondLocal,
+			wantSymbols: []Symbol{
+				{Name: "e", Scope: LocalScope, Index: 0},
+				{Name: "f", Scope: LocalScope, Index: 1},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		for _, want := range tt.wantSymbols {
+			got, ok := tt.table.Resolve(want.Name)
+			if !ok {
+				t.Errorf("name %q not resolvable", want.Name)
+				continue
+			}
+
+			if got != want {
+				t.Errorf("expected %q to resolve to %+v, but got %+v", want.Name, want, got)
+			}
+		}
+	}
+
+	wantUnresolvable := []struct {
+		table *SymbolTable
+		names []string
+	}{
+		{
+			table: firstLocal,
+			names: []string{"a", "b", "e", "f", "g", "h"},
+		},
+		{
+			table: secondLocal,
+			names: []string{"a", "b", "c", "d", "g", "h"},
+		},
+	}
+
+	for _, tt := range wantUnresolvable {
+		for _, name := range tt.names {
+			if _, ok := tt.table.ResolveCurrentScope(name); ok {
+				t.Errorf("name %q resolved, but was expected not to", name)
+			}
+		}
+	}
+}
+
 func TestDefineAndResolveFunctionName(t *testing.T) {
 	global := NewSymbolTable()
 	global.DefineFunctionName("a")
@@ -301,6 +394,22 @@ func TestDefineAndResolveFunctionName(t *testing.T) {
 	want := Symbol{Name: "a", Scope: FunctionScope, Index: 0}
 
 	got, ok := global.Resolve(want.Name)
+	if !ok {
+		t.Fatalf("function name %q not resolvable", want.Name)
+	}
+
+	if got != want {
+		t.Errorf("expected %q to resolve to %+v, but got %+v", want.Name, want, got)
+	}
+}
+
+func TestDefineAndResolveCurrentScopeFunctionName(t *testing.T) {
+	global := NewSymbolTable()
+	global.DefineFunctionName("a")
+
+	want := Symbol{Name: "a", Scope: FunctionScope, Index: 0}
+
+	got, ok := global.ResolveCurrentScope(want.Name)
 	if !ok {
 		t.Fatalf("function name %q not resolvable", want.Name)
 	}
@@ -318,6 +427,23 @@ func TestShadowingFunctionName(t *testing.T) {
 	want := Symbol{Name: "a", Scope: GlobalScope, Index: 0}
 
 	got, ok := global.Resolve(want.Name)
+	if !ok {
+		t.Fatalf("function name %q not resolvable", want.Name)
+	}
+
+	if got != want {
+		t.Errorf("expected %q to resolve to %+v, but got %+v", want.Name, want, got)
+	}
+}
+
+func TestShadowingFunctionNameCurrentScope(t *testing.T) {
+	global := NewSymbolTable()
+	global.DefineFunctionName("a")
+	global.Define("a")
+
+	want := Symbol{Name: "a", Scope: GlobalScope, Index: 0}
+
+	got, ok := global.ResolveCurrentScope(want.Name)
 	if !ok {
 		t.Fatalf("function name %q not resolvable", want.Name)
 	}
