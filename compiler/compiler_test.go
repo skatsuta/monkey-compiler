@@ -468,6 +468,99 @@ func TestGlobalLetStatements(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestGlobalAssignmentStatements(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			one = 1;
+			two = 2;
+			`,
+			wantConsts: []interface{}{1, 2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 1),
+			},
+		},
+		{
+			input: `
+			one = 1;
+			one;
+			`,
+			wantConsts: []interface{}{1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			one = 1;
+			two = one;
+			two;
+			`,
+			wantConsts: []interface{}{1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpGetGlobal, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			a = 1;
+			a = 2;
+			a;
+			`,
+			wantConsts: []interface{}{1, 2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			a = 1;
+			b = 2;
+			tmp = a;
+			a = b;
+			b = tmp;
+			a;
+			b;
+			`,
+			wantConsts: []interface{}{1, 2},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpSetGlobal, 2),
+				code.Make(code.OpGetGlobal, 1),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 2),
+				code.Make(code.OpSetGlobal, 1),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+				code.Make(code.OpGetGlobal, 1),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func TestStringExpressions(t *testing.T) {
 	tests := []compilerTestCase{
 		{
@@ -909,6 +1002,117 @@ func TestLetStatementScopes(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestAssignmentStatementScopes(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			num = 55;
+			fn() { num = 66 };
+			num;
+			`,
+			wantConsts: []interface{}{
+				55,
+				66,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpReturn),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpClosure, 2, 0),
+				code.Make(code.OpPop),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				num = 55;
+				num = 66;
+				num;
+			};
+			`,
+			wantConsts: []interface{}{
+				55,
+				66,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpClosure, 2, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				a = 55;
+				b = 66;
+				c = 77;
+				fn() {
+					a = 88;
+					b = 99;
+					a + b + c;
+				};
+				a + b + c;
+			};
+			`,
+			wantConsts: []interface{}{
+				55,
+				66,
+				77,
+				88,
+				99,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 3),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpConstant, 4),
+					code.Make(code.OpSetLocal, 1),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetLocal, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpGetFree, 0),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 1),
+					code.Make(code.OpConstant, 2),
+					code.Make(code.OpSetLocal, 2),
+					code.Make(code.OpGetLocal, 2),
+					code.Make(code.OpClosure, 5, 1),
+					code.Make(code.OpPop),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetLocal, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpGetLocal, 2),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpClosure, 6, 0),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func TestBuiltins(t *testing.T) {
 	tests := []compilerTestCase{
 		{
@@ -1163,6 +1367,67 @@ func TestRecursiveFunctions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestShadowingBuiltinFunctions(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+			let len = 1;
+			len;
+			`,
+			wantConsts: []interface{}{1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			len = 1;
+			len;
+			`,
+			wantConsts: []interface{}{1},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			len = 1;
+			fn() {
+				len = 2;
+				len;
+			};
+			len;
+			`,
+			wantConsts: []interface{}{
+				1,
+				2,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpClosure, 2, 0),
+				code.Make(code.OpPop),
+				code.Make(code.OpGetGlobal, 0),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
@@ -1177,11 +1442,11 @@ func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 		bytecode := cmplr.Bytecode()
 
 		if err := testInstructions(tt.wantInsns, bytecode.Instructions); err != nil {
-			t.Fatalf("testInstructions failed: %s", err)
+			t.Errorf("testInstructions failed: %s", err)
 		}
 
 		if err := testConstants(tt.wantConsts, bytecode.Constants); err != nil {
-			t.Fatalf("testConstants failed: %s", err)
+			t.Errorf("testConstants failed: %s", err)
 		}
 	}
 }

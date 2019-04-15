@@ -81,9 +81,30 @@ func (c *Compiler) Compile(node ast.Node) error {
 
 		c.emit(code.OpPop)
 
+	// FIXME: duplicate of assign statement; need to merge
 	case *ast.LetStatement:
 		// Define a symbol at first in order to make recursive functions work
 		sym := c.symTbl.Define(node.Name.Value)
+
+		// Compile the right-hand side expression
+		if err := c.Compile(node.Value); err != nil {
+			return err
+		}
+
+		// Define an identifier as a symbol in a proper scope
+		if sym.Scope == GlobalScope {
+			c.emit(code.OpSetGlobal, sym.Index)
+		} else {
+			c.emit(code.OpSetLocal, sym.Index)
+		}
+
+	case *ast.AssignmentStatement:
+		name := node.Name.Value
+		sym, exists := c.symTbl.ResolveCurrentScope(name)
+		if !exists || sym.Scope == BuiltinScope {
+			// Define a symbol at first in order to make recursive functions work
+			sym = c.symTbl.Define(name)
+		}
 
 		// Compile the right-hand side expression
 		if err := c.Compile(node.Value); err != nil {
