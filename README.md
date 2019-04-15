@@ -52,7 +52,7 @@ Hello, world!
 
 ### Number types and variable bindings
 
-You can define variables using `let` keyword. `let` can create  bindings for any type of objects in Monkey.
+You can define variables using `let` keyword. `let` can create  bindings for objects of any type in Monkey.
 
 Two number types are supported in this implementation: integers and floating-point numbers.
 
@@ -86,7 +86,7 @@ false
 
 ### If expressions
 
-You can use `if` and `else` keywords for conditional expressions. The last value in an executed block are returned from the expression.
+You can use `if` and `else` keywords for conditional expressions. The last value in an executed block is returned from the expression.
 
 ```sh
 >> let a = 10;
@@ -101,7 +101,7 @@ You can use `if` and `else` keywords for conditional expressions. The last value
 
 ### Functions and closures
 
-You can define functions using `fn` keyword. All functions are closures in Monkey and you have to use `let` along with `fn` to bind a closure to a variable. Closures close over an environment where they are defined, and are evaluated in *the* environment when called. The last value in an executed function body are returned as a return value.
+You can define functions using `fn` keyword. All functions are closures in Monkey and you have to use `let` along with `fn` to bind a closure to a variable. Closures close over an environment where they are defined, and are evaluated in *the* environment when called. The last value in an executed function body is returned as a return value.
 
 ```sh
 >> let multiply = fn(x, y) { x * y };
@@ -144,9 +144,9 @@ Thorsten
 4
 ```
 
-### Hash tables
+### Hash maps
 
-You can build hash tables using curly brackets `{}`. Hash literals are `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and any type of objects as values. To get a value of a key from a hash table, use `hash[key]` syntax.
+You can build hash maps using curly brackets `{}`. Hash literals are `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and objects of any type as values. To get a value of a key from a hash map, use `hash[key]` syntax.
 
 ```sh
 >> let myHash = {"name": "Jimmy", "age": 72, true: "yes, a boolean", 99: "correct, an integer"};
@@ -278,9 +278,9 @@ nil
 
 Here is a Fibonacci function implemented in Monkey:
 
-```
-# fibonacci.monkey
+##### fibonacci.monkey
 
+```
 let fib = fn(x) {
    if (x <= 1) {
      return x;
