@@ -264,6 +264,38 @@ func TestAssignmentStatementScopes(t *testing.T) {
 	runVMTests(t, tests)
 }
 
+func TestShadowingBuiltinFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+			let len = 1;
+			len;
+			`,
+			want: 1,
+		},
+		{
+			input: `
+			len = 1;
+			len;
+			`,
+			want: 1,
+		},
+		{
+			input: `
+			len = 1;
+			push = fn() {
+				len = 2;
+				len;
+			}();
+			len + push;
+			`,
+			want: 3,
+		},
+	}
+
+	runVMTests(t, tests)
+}
+
 func TestStringExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{`"monkey"`, "monkey"},
