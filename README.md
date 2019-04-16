@@ -13,6 +13,8 @@ This implementation has added several features to the one implemented in the abo
 * Added support for floating-point numbers and their arithmetic (`+`, `-`, `*`, `/`) and comparison (`<`, `>`, `==`, `!=`) operations 
 * Added support for "greater than or equal to" (`>=`) and "less than or equal to" (`<=`) comparison operators
 * Added support for logical AND (`&&`) and OR (`||`) operators
+* Added support for assignment statements without `let` keyword
+* Added support for reassignment statements
 
 
 ## Prerequisites
@@ -52,17 +54,20 @@ Hello, world!
 
 ### Number types and variable bindings
 
-You can define variables using `let` keyword. `let` can create  bindings for objects of any type in Monkey.
+You can define and reassign to variables using `=` operator. Variables are dynamically typed and can be assigned to objects of any type in Monkey. You can use `let` keyword when defining variables, but it's completely optional and there is no difference between with and without `let` keyword. 
 
 Two number types are supported in this implementation: integers and floating-point numbers.
 
 ```sh
->> let a = 1;
+>> let a = 1;  # Assignment with `let` keyword
 >> a
 1
->> let b = 2.5;
+>> b = 2.5;  # Assignement without `let` keyword
 >> b
 2.5
+>> b = "a";  # Reassignment to b
+>> b
+a
 ```
 
 ### Arithmetic and comparison expressions
