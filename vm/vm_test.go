@@ -141,10 +141,10 @@ func TestBooleanExpressions(t *testing.T) {
 func TestLogicalExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{"1 && 2", 2},
-		{"\"a\" && 1", 1},
+		{`"a" && 1`, 1},
 		{"false && 1", false},
 		{"1 || 2", 1},
-		{"\"a\" || 1", "a"},
+		{`"a" || 1`, "a"},
 		{"true || 1", true},
 		{"1.1 && 2.2", 2.2},
 		{"false && 1.1", false},
