@@ -178,6 +178,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	}
 }
 
+// NOTE: parseLetStatement could be merged into parseAssignmentStatement, but currently leave
+// it as it is because of backward compatibility for evaluation interpreter.
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
