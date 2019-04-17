@@ -114,13 +114,13 @@ func TestAssignmentStatements(t *testing.T) {
 		stmt := program.Statements[l-1]
 		testAssignmentStatement(t, stmt, tt.expectedIdent)
 
-		val := stmt.(*ast.AssignmentStatement).Value
+		val := stmt.(*ast.AssignStatement).Value
 		testLiteralExpression(t, val, tt.expectedValue)
 	}
 }
 
 func testAssignmentStatement(t *testing.T, s ast.Statement, name string) {
-	stmt, ok := s.(*ast.AssignmentStatement)
+	stmt, ok := s.(*ast.AssignStatement)
 	if !ok {
 		t.Errorf("statement not *ast.AssignmentStatement. got=%T", s)
 	}

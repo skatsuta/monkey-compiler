@@ -79,21 +79,21 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
-// AssignmentStatement represents an assignment statement.
-type AssignmentStatement struct {
+// AssignStatement represents an assignment statement.
+type AssignStatement struct {
 	Token token.Token // token.ASSIGN
 	Name  *Ident
 	Value Expression
 }
 
-func (as *AssignmentStatement) statementNode() {}
+func (as *AssignStatement) statementNode() {}
 
 // TokenLiteral returns a token literal of assignment statement.
-func (as *AssignmentStatement) TokenLiteral() string {
+func (as *AssignStatement) TokenLiteral() string {
 	return as.Token.Literal
 }
 
-func (as *AssignmentStatement) String() string {
+func (as *AssignStatement) String() string {
 	var out bytes.Buffer
 
 	// Variable name

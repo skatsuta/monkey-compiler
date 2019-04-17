@@ -211,9 +211,9 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
-func (p *Parser) parseAssignmentStatement() *ast.AssignmentStatement {
+func (p *Parser) parseAssignmentStatement() *ast.AssignStatement {
 	// Parse an identifier
-	stmt := &ast.AssignmentStatement{
+	stmt := &ast.AssignStatement{
 		Name: &ast.Ident{
 			Token: p.curToken,
 			Value: p.curToken.Literal,

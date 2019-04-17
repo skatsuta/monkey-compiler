@@ -98,7 +98,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpSetLocal, sym.Index)
 		}
 
-	case *ast.AssignmentStatement:
+	case *ast.AssignStatement:
 		name := node.Name.Value
 		sym, exists := c.symTbl.ResolveCurrentScope(name)
 		if !exists || sym.Scope == BuiltinScope {
