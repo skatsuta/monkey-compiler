@@ -166,20 +166,19 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() ast.Statement {
-	switch {
-	case p.curTokenIs(token.LET):
+	switch p.curToken.Type {
+	case token.LET:
 		return p.parseLetStatement()
-	case p.curTokenIs(token.IDENT) && p.peekTokenIs(token.ASSIGN):
-		return p.parseAssignmentStatement()
-	case p.curTokenIs(token.RETURN):
+	case token.IDENT, token.INT, token.FLOAT, token.STRING, token.FUNCTION, token.LPAREN,
+		token.LBRACKET, token.MINUS, token.BANG:
+		return p.parseSimpleStatement()
+	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
 }
 
-// NOTE: parseLetStatement could be merged into parseAssignmentStatement, but currently leave
-// it as it is because of backward compatibility for evaluation interpreter.
 func (p *Parser) parseLetStatement() *ast.LetStatement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
@@ -211,31 +210,31 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
-func (p *Parser) parseAssignmentStatement() *ast.AssignStatement {
-	// Parse an identifier
-	ident := &ast.Ident{
-		Token: p.curToken,
-		Value: p.curToken.Literal,
-	}
-	stmt := &ast.AssignStatement{LHS: ident}
+func (p *Parser) parseSimpleStatement() (stmt ast.Statement) {
+	lhs := p.parseExpression(LOWEST)
 
-	// Advance the cursor to '=' sign
-	if !p.expectPeek(token.ASSIGN) {
-		return nil
-	}
+	switch p.peekToken.Type {
+	case token.ASSIGN:
+		p.nextToken()
 
-	// Store the '=' sign
-	stmt.Token = p.curToken
+		tok := p.curToken // Equal sign '='
 
-	// Advance the cursor to the right-hand side (RHS) expression
-	p.nextToken()
+		p.nextToken()
 
-	// Parse the RHS expression
-	stmt.RHS = p.parseExpression(LOWEST)
+		rhs := p.parseExpression(LOWEST)
 
-	// Give an anonymous closure a variable name
-	if fl, ok := stmt.RHS.(*ast.FunctionLiteral); ok {
-		fl.Name = ident.Value
+		// Give an anonymous closure a variable name
+		if fl, ok := rhs.(*ast.FunctionLiteral); ok {
+			if ident, ok := lhs.(*ast.Ident); ok {
+				fl.Name = ident.Value
+			}
+		}
+
+		stmt = &ast.AssignStatement{Token: tok, LHS: lhs, RHS: rhs}
+
+	default:
+		// Expression
+		stmt = &ast.ExpressionStatement{Token: p.curToken, Expression: lhs}
 	}
 
 	for p.peekTokenIs(token.SEMICOLON) {
