@@ -99,7 +99,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 	case *ast.AssignStatement:
-		name := node.Name.Value
+		name := node.LHS.(*ast.Ident).Value
 		sym, exists := c.symTbl.ResolveCurrentScope(name)
 		if !exists || sym.Scope == BuiltinScope {
 			// Define a symbol at first in order to make recursive functions work
@@ -107,7 +107,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		// Compile the right-hand side expression
-		if err := c.Compile(node.Value); err != nil {
+		if err := c.Compile(node.RHS); err != nil {
 			return err
 		}
 

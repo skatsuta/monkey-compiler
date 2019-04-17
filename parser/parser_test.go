@@ -114,7 +114,7 @@ func TestAssignmentStatements(t *testing.T) {
 		stmt := program.Statements[l-1]
 		testAssignmentStatement(t, stmt, tt.expectedIdent)
 
-		val := stmt.(*ast.AssignStatement).Value
+		val := stmt.(*ast.AssignStatement).RHS
 		testLiteralExpression(t, val, tt.expectedValue)
 	}
 }
@@ -125,12 +125,17 @@ func testAssignmentStatement(t *testing.T, s ast.Statement, name string) {
 		t.Errorf("statement not *ast.AssignmentStatement. got=%T", s)
 	}
 
-	if stmt.Name.Value != name {
-		t.Errorf("stmt.Name.Value not %q. got=%q", name, stmt.Name.Value)
+	ident, ok := stmt.LHS.(*ast.Ident)
+	if !ok {
+		t.Errorf("stmt.LHS not identifier. got=%T (%#v)", ident, ident)
 	}
 
-	if stmt.Name.TokenLiteral() != name {
-		t.Errorf("stmt.Name not %q. got=%q", name, stmt.Name)
+	if got := ident.Value; got != name {
+		t.Errorf("stmt.Name.Value not %q. got=%q", name, got)
+	}
+
+	if got := ident.TokenLiteral(); got != name {
+		t.Errorf("stmt.Name not %q. got=%q", name, got)
 	}
 }
 

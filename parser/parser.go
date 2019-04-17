@@ -213,12 +213,11 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 func (p *Parser) parseAssignmentStatement() *ast.AssignStatement {
 	// Parse an identifier
-	stmt := &ast.AssignStatement{
-		Name: &ast.Ident{
-			Token: p.curToken,
-			Value: p.curToken.Literal,
-		},
+	ident := &ast.Ident{
+		Token: p.curToken,
+		Value: p.curToken.Literal,
 	}
+	stmt := &ast.AssignStatement{LHS: ident}
 
 	// Advance the cursor to '=' sign
 	if !p.expectPeek(token.ASSIGN) {
@@ -232,11 +231,11 @@ func (p *Parser) parseAssignmentStatement() *ast.AssignStatement {
 	p.nextToken()
 
 	// Parse the RHS expression
-	stmt.Value = p.parseExpression(LOWEST)
+	stmt.RHS = p.parseExpression(LOWEST)
 
 	// Give an anonymous closure a variable name
-	if fl, ok := stmt.Value.(*ast.FunctionLiteral); ok {
-		fl.Name = stmt.Name.Value
+	if fl, ok := stmt.RHS.(*ast.FunctionLiteral); ok {
+		fl.Name = ident.Value
 	}
 
 	for p.peekTokenIs(token.SEMICOLON) {

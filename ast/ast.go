@@ -81,9 +81,8 @@ func (ls *LetStatement) String() string {
 
 // AssignStatement represents an assignment statement.
 type AssignStatement struct {
-	Token token.Token // token.ASSIGN
-	Name  *Ident
-	Value Expression
+	Token    token.Token // token.ASSIGN
+	LHS, RHS Expression
 }
 
 func (as *AssignStatement) statementNode() {}
@@ -94,17 +93,17 @@ func (as *AssignStatement) TokenLiteral() string {
 }
 
 func (as *AssignStatement) String() string {
-	var out bytes.Buffer
+	var out strings.Builder
 
-	// Variable name
-	out.WriteString(as.Name.String())
+	// Left-hand side expression
+	out.WriteString(as.LHS.String())
 
 	// Assignment symbol (equal sign)
 	out.WriteString(" = ")
 
-	// Right-hand side expression (value)
-	if as.Value != nil {
-		out.WriteString(as.Value.String())
+	// Right-hand side expression
+	if as.RHS != nil {
+		out.WriteString(as.RHS.String())
 	}
 
 	out.WriteString(";")
