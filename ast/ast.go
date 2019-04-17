@@ -169,11 +169,10 @@ func (es *ExpressionStatement) TokenLiteral() string {
 }
 
 func (es *ExpressionStatement) String() string {
-	if es.Expression != nil {
-		return es.Expression.String()
+	if es.Expression == nil {
+		return ""
 	}
-
-	return ""
+	return es.Expression.String()
 }
 
 // IntegerLiteral represents an integer literal.
