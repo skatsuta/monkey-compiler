@@ -151,11 +151,11 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-		case code.OpIndex:
+		case code.OpGetIndex:
 			idx := vm.pop()
 			left := vm.pop()
 
-			if err := vm.execIndexExpr(left, idx); err != nil {
+			if err := vm.execGetIndexExpr(left, idx); err != nil {
 				return err
 			}
 
@@ -478,19 +478,19 @@ func (vm *VM) execBinaryStrOp(op code.Opcode, left, right object.Object) error {
 	return vm.push(&object.String{Value: leftVal + rightVal})
 }
 
-func (vm *VM) execIndexExpr(left, idx object.Object) error {
+func (vm *VM) execGetIndexExpr(left, idx object.Object) error {
 	leftType := left.Type()
 	switch {
 	case leftType == object.ArrayType && idx.Type() == object.IntegerType:
-		return vm.execArrayIndex(left, idx)
+		return vm.execArrayGetIndex(left, idx)
 	case leftType == object.HashType:
-		return vm.execHashIndex(left, idx)
+		return vm.execHashGetIndex(left, idx)
 	default:
 		return fmt.Errorf("index operator not supported: %s", leftType)
 	}
 }
 
-func (vm *VM) execArrayIndex(array, idx object.Object) error {
+func (vm *VM) execArrayGetIndex(array, idx object.Object) error {
 	arr := array.(*object.Array)
 	i := idx.(*object.Integer).Value
 	max := int64(len(arr.Elements) - 1)
@@ -502,7 +502,7 @@ func (vm *VM) execArrayIndex(array, idx object.Object) error {
 	return vm.push(arr.Elements[i])
 }
 
-func (vm *VM) execHashIndex(hash, idx object.Object) error {
+func (vm *VM) execHashGetIndex(hash, idx object.Object) error {
 	h := hash.(*object.Hash)
 
 	key, ok := idx.(object.Hashable)

@@ -57,8 +57,8 @@ const (
 	OpArray
 	// OpHash is an opcode to create a hash map.
 	OpHash
-	// OpIndex is an opcode to get an element at the index from an indexed data structure.
-	OpIndex
+	// OpGetIndex is an opcode to get an element at the index from an indexed data structure.
+	OpGetIndex
 	// OpCall is an opcode to call compiled functions.
 	OpCall
 	// OpReturnValue is an opcode to return a value from a function.
@@ -109,7 +109,7 @@ var definitions = map[Opcode]*Definition{
 	OpGetGlobal:          {Name: "OpGetGlobal", OperandWidths: []int{2}},
 	OpArray:              {Name: "OpArray", OperandWidths: []int{2}},
 	OpHash:               {Name: "OpHash", OperandWidths: []int{2}},
-	OpIndex:              {Name: "OpIndex", OperandWidths: nil},
+	OpGetIndex:           {Name: "OpGetIndex", OperandWidths: nil},
 	OpCall:               {Name: "OpCall", OperandWidths: []int{1}},
 	OpReturnValue:        {Name: "OpReturnValue", OperandWidths: nil},
 	OpReturn:             {Name: "OpReturn", OperandWidths: nil},

@@ -203,7 +203,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 
-		c.emit(code.OpIndex)
+		c.emit(code.OpGetIndex)
 
 	case *ast.IfExpression:
 		if err := c.Compile(node.Condition); err != nil {
