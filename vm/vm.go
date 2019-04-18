@@ -151,6 +151,15 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpSetIndex:
+			val := vm.pop()
+			idx := vm.pop()
+			left := vm.pop()
+
+			if err := vm.execSetIndexExpr(left, idx, val); err != nil {
+				return err
+			}
+
 		case code.OpGetIndex:
 			idx := vm.pop()
 			left := vm.pop()
@@ -476,6 +485,45 @@ func (vm *VM) execBinaryStrOp(op code.Opcode, left, right object.Object) error {
 	rightVal := right.(*object.String).Value
 
 	return vm.push(&object.String{Value: leftVal + rightVal})
+}
+
+func (vm *VM) execSetIndexExpr(left, idx, val object.Object) error {
+	leftType := left.Type()
+	switch {
+	case leftType == object.ArrayType && idx.Type() == object.IntegerType:
+		return vm.execArraySetIndex(left, idx, val)
+	case leftType == object.HashType:
+		return vm.execHashSetIndex(left, idx, val)
+	default:
+		return fmt.Errorf("index operator not supported: %s", leftType)
+	}
+}
+
+func (vm *VM) execArraySetIndex(array, idx, val object.Object) error {
+	arr := array.(*object.Array)
+	i := idx.(*object.Integer).Value
+	max := int64(len(arr.Elements) - 1)
+
+	if i < 0 || i > max {
+		return fmt.Errorf("array index %d out of range", i)
+	}
+
+	arr.Elements[i] = val
+
+	return nil
+}
+
+func (vm *VM) execHashSetIndex(hash, idx, val object.Object) error {
+	h := hash.(*object.Hash)
+
+	key, ok := idx.(object.Hashable)
+	if !ok {
+		return fmt.Errorf("unusable as hash key: %s", idx.Type())
+	}
+
+	h.Pairs[key.HashKey()] = object.HashPair{Key: idx, Value: val}
+
+	return nil
 }
 
 func (vm *VM) execGetIndexExpr(left, idx object.Object) error {

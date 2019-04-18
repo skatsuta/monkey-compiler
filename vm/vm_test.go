@@ -341,6 +341,47 @@ func TestHashLiterals(t *testing.T) {
 	runVMTests(t, tests)
 }
 
+func TestSetIndexExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"a = [1, 2, 3]; a[1] = 4; a", []int{1, 4, 3}},
+		{"a = [1, 2, 3]; a[0 + 2] = 3 - 4; a", []int{1, 2, -1}},
+		{"a = [[1, 1, 1]]; a[0][0] = 2; a[0]", []int{2, 1, 1}},
+		{
+			input: "h = {}; h[0] = 1; h",
+			want: map[object.HashKey]int64{
+				(&object.Integer{Value: 0}).HashKey(): 1,
+			},
+		},
+		{
+			input: "h = {1: 1, 2: 2}; h[1] = 0; h",
+			want: map[object.HashKey]int64{
+				(&object.Integer{Value: 1}).HashKey(): 0,
+				(&object.Integer{Value: 2}).HashKey(): 2,
+			},
+		},
+		{
+			input: "h = {1: 1, 2: 2}; h[3] = 3; h",
+			want: map[object.HashKey]int64{
+				(&object.Integer{Value: 1}).HashKey(): 1,
+				(&object.Integer{Value: 2}).HashKey(): 2,
+				(&object.Integer{Value: 3}).HashKey(): 3,
+			},
+		},
+	}
+
+	runVMTests(t, tests)
+}
+
+func TestSetIndexExpressionErrors(t *testing.T) {
+	tests := []string{
+		"a = []; a[1] = 1",
+		"a = [1, 2, 3]; a[10] = 9",
+		"a = [[1, 1, 1]]; a[1][0] = 2",
+	}
+
+	runVMTestErrors(t, tests)
+}
+
 func TestGetIndexExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{"[1, 2, 3][1]", 2},
@@ -811,6 +852,26 @@ func runVMTests(t *testing.T, tests []vmTestCase) {
 		got := vm.LastPoppedStackElem()
 
 		testExpectedObject(t, tt.want, got)
+	}
+}
+
+func runVMTestErrors(t *testing.T, tests []string) {
+	t.Helper()
+
+	for _, tt := range tests {
+		program := parse(tt)
+
+		complr := compiler.New()
+		if err := complr.Compile(program); err != nil {
+			t.Fatalf("compiler error: %s", err)
+		}
+
+		// dumpBytecode(complr.Bytecode())
+
+		vm := New(complr.Bytecode())
+		if err := vm.Run(); err == nil {
+			t.Errorf("expected vm error, but got nil")
+		}
 	}
 }
 
