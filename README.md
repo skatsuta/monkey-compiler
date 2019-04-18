@@ -13,8 +13,9 @@ This implementation has added several features to the one implemented in the abo
 * Added support for floating-point numbers and their arithmetic (`+`, `-`, `*`, `/`) and comparison (`<`, `>`, `==`, `!=`) operations 
 * Added support for "greater than or equal to" (`>=`) and "less than or equal to" (`<=`) comparison operators
 * Added support for logical AND (`&&`) and OR (`||`) operators
-* Added support for assignment statements without `let` keyword
-* Added support for reassignment statements
+* Added support for variable assignment statements without `let` keyword
+* Added support for variable reassignment statements
+* Added support for setting values into existing arrays and hash maps
 
 
 ## Prerequisites
@@ -137,7 +138,7 @@ Hello John!
 
 ### Arrays
 
-You can build arrays using square brackets `[]`. Arrays can contain any type of values, such as integers, strings, even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax.
+You can build arrays using square brackets `[]`. Array literal is `[value1, value2, ...]`. Arrays can contain any type of values, such as integers, strings, even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax. To set a value at an index in an array to another value, use `array[index] = value` syntax.
 
 ```sh
 >> let myArray = ["Thorsten", "Ball", 28, fn(x) { x * x }];
@@ -147,11 +148,14 @@ Thorsten
 28
 >> myArray[3](2);
 4
+>> myArray[2] = myArray[2] + 1
+>> myArray[2]
+29
 ```
 
 ### Hash maps
 
-You can build hash maps using curly brackets `{}`. Hash literals are `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and objects of any type as values. To get a value of a key from a hash map, use `hash[key]` syntax.
+You can build hash maps using curly brackets `{}`. Hash literal is `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and objects of any type as values. To get a value of a key from a hash map, use `hash[key]` syntax. To set a value of a key in a hash map to another value, use `hash[key] = value` syntax.
 
 ```sh
 >> let myHash = {"name": "Jimmy", "age": 72, true: "yes, a boolean", 99: "correct, an integer"};
@@ -163,6 +167,9 @@ Jimmy
 yes, a boolean
 >> myHash[99]
 correct, an integer
+>> myHash[0] = "right, zero"
+>> myHash[0]
+right, zero
 ```
 
 ### Built-in functions
