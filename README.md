@@ -16,6 +16,7 @@ This implementation has added several features to the one implemented in the abo
 * Added support for variable assignment statements without `let` keyword
 * Added support for variable reassignment statements
 * Added support for setting values into existing arrays and hash maps
+* Added support for `nil` literal
 
 
 ## Prerequisites
@@ -63,7 +64,7 @@ Two number types are supported in this implementation: integers and floating-poi
 >> let a = 1;  # Assignment with `let` keyword
 >> a
 1
->> b = 2.5;  # Assignement without `let` keyword
+>> b = 2.5;  # Assignment without `let` keyword
 >> b
 2.5
 >> b = "a";  # Reassignment to b
