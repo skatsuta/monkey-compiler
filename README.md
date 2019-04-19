@@ -138,7 +138,7 @@ Hello John!
 
 ### Arrays
 
-You can build arrays using square brackets `[]`. Array literal is `[value1, value2, ...]`. Arrays can contain any type of values, such as integers, strings, even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax. To set a value at an index in an array to another value, use `array[index] = value` syntax.
+You can build arrays using square brackets `[]`. Array literal is `[value1, value2, ...]`. Arrays can contain values of any type, such as integers, strings, even arrays and functions (closures). To get an element at an index from an array, use `array[index]` syntax. To set a value at an index in an array to another value, use `array[index] = value` syntax.
 
 ```sh
 >> let myArray = ["Thorsten", "Ball", 28, fn(x) { x * x }];
@@ -155,7 +155,7 @@ Thorsten
 
 ### Hash maps
 
-You can build hash maps using curly brackets `{}`. Hash literal is `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and objects of any type as values. To get a value of a key from a hash map, use `hash[key]` syntax. To set a value of a key in a hash map to another value, use `hash[key] = value` syntax.
+You can build hash maps using curly brackets `{}`. Hash literal is `{key1: value1, key2: value2, ...}`. You can use numbers, strings and booleans as keys, and objects of any type as values. To get a value under a key from a hash map, use `hash[key]` syntax. To set a value under a key in a hash map to another value, use `hash[key] = value` syntax.
 
 ```sh
 >> let myHash = {"name": "Jimmy", "age": 72, true: "yes, a boolean", 99: "correct, an integer"};
