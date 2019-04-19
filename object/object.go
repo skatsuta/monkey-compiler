@@ -151,6 +151,11 @@ func (n *Nil) Inspect() string {
 	return "nil"
 }
 
+// HashKey returns a hash key object for n.
+func (n *Nil) HashKey() HashKey {
+	return HashKey{Type: n.Type(), Value: 2} // false == 0 and true == 1, then nil == 2
+}
+
 // ReturnValue represents a return value.
 type ReturnValue struct {
 	Value Object

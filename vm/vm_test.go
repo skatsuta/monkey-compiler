@@ -138,6 +138,14 @@ func TestBooleanExpressions(t *testing.T) {
 	runVMTests(t, tests)
 }
 
+func TestNilExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"nil", &object.Nil{}},
+	}
+
+	runVMTests(t, tests)
+}
+
 func TestLogicalExpressions(t *testing.T) {
 	tests := []vmTestCase{
 		{"1 && 2", 2},

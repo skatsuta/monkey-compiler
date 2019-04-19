@@ -274,6 +274,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpFalse)
 		}
 
+	case *ast.Nil:
+		c.emit(code.OpNil)
+
 	case *ast.IntegerLiteral:
 		i := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(i))

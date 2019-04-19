@@ -82,6 +82,7 @@ func New(l lexer.Lexer) *Parser {
 		token.MINUS:    p.parsePrefixExpression,
 		token.TRUE:     p.parseBoolean,
 		token.FALSE:    p.parseBoolean,
+		token.NIL:      p.parseNil,
 		token.LPAREN:   p.parseGroupedExpression,
 		token.IF:       p.parseIfExpression,
 		token.FUNCTION: p.parseFunctionLiteral,
@@ -376,6 +377,10 @@ func (p *Parser) parseBoolean() ast.Expression {
 		Token: p.curToken,
 		Value: p.curTokenIs(token.TRUE),
 	}
+}
+
+func (p *Parser) parseNil() ast.Expression {
+	return &ast.Nil{Token: p.curToken}
 }
 
 func (p *Parser) parseGroupedExpression() ast.Expression {

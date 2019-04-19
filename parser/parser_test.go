@@ -504,6 +504,29 @@ func testBooleanLiteral(t *testing.T, expr ast.Expression, value bool) {
 	}
 }
 
+func TestNilExpressions(t *testing.T) {
+	input := "nil"
+
+	p := New(lexer.New(input))
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	l := len(program.Statements)
+	if l != 1 {
+		t.Fatalf("program has not enough statements. got=%d", l)
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	if _, ok := stmt.Expression.(*ast.Nil); !ok {
+		t.Errorf("stmt is not *ast.Nil")
+	}
+}
+
 func TestBooleanExpression(t *testing.T) {
 	tests := []struct {
 		input    string

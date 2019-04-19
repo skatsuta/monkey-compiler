@@ -341,6 +341,21 @@ func TestBooleanExpressions(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestNilExpressions(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input:      "nil",
+			wantConsts: []interface{}{},
+			wantInsns: []code.Instructions{
+				code.Make(code.OpNil),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+
+	runCompilerTests(t, tests)
+}
+
 func TestLogicalExpressions(t *testing.T) {
 	tests := []compilerTestCase{
 		{

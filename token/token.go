@@ -75,6 +75,8 @@ const (
 	TRUE = "TRUE"
 	// FALSE is a token type for false.
 	FALSE = "FALSE"
+	// NIL is a token type for nil.
+	NIL = "NIL"
 	// IF is a token type for if.
 	IF = "IF"
 	// ELSE is a token type for else.
@@ -97,6 +99,7 @@ var keywords = map[string]Type{
 	"let":    LET,
 	"true":   TRUE,
 	"false":  FALSE,
+	"nil":    NIL,
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,

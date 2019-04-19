@@ -275,7 +275,23 @@ func (b *Boolean) TokenLiteral() string {
 }
 
 func (b *Boolean) String() string {
-	return b.Token.Literal
+	return b.TokenLiteral()
+}
+
+// Nil represents nil value.
+type Nil struct {
+	Token token.Token
+}
+
+func (n *Nil) expressionNode() {}
+
+// TokenLiteral returns a token literal of nil value.
+func (n *Nil) TokenLiteral() string {
+	return n.Token.Literal
+}
+
+func (n *Nil) String() string {
+	return n.TokenLiteral()
 }
 
 // IfExpression represents an if expression.

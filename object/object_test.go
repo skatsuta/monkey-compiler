@@ -67,3 +67,12 @@ func TestIntegerHashKey(t *testing.T) {
 			one1.HashKey(), two1.HashKey())
 	}
 }
+
+func TestNilHashKey(t *testing.T) {
+	n1 := &Nil{}
+	n2 := &Nil{}
+
+	if n1.HashKey() != n2.HashKey() {
+		t.Errorf("nils have different hash keys: %#v != %#v", n1.HashKey(), n2.HashKey())
+	}
+}
