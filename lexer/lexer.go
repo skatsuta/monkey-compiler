@@ -47,34 +47,34 @@ func (l *lexer) NextToken() token.Token {
 	switch l.ch {
 	case '=':
 		if l.peekChar() == '=' {
-			tok = l.readTwoCharToken(token.EQ)
+			tok = l.readTwoCharToken(token.Eq)
 		} else {
-			tok = newToken(token.ASSIGN, l.ch)
+			tok = newToken(token.Assign, l.ch)
 		}
 	case '!':
 		if l.peekChar() == '=' {
-			tok = l.readTwoCharToken(token.NEQ)
+			tok = l.readTwoCharToken(token.NEq)
 		} else {
-			tok = newToken(token.BANG, l.ch)
+			tok = newToken(token.Bang, l.ch)
 		}
 	case ';':
-		tok = newToken(token.SEMICOLON, l.ch)
+		tok = newToken(token.Semicolon, l.ch)
 	case ':':
-		tok = newToken(token.COLON, l.ch)
+		tok = newToken(token.Colon, l.ch)
 	case '(':
-		tok = newToken(token.LPAREN, l.ch)
+		tok = newToken(token.LParen, l.ch)
 	case ')':
-		tok = newToken(token.RPAREN, l.ch)
+		tok = newToken(token.RParen, l.ch)
 	case ',':
-		tok = newToken(token.COMMA, l.ch)
+		tok = newToken(token.Comma, l.ch)
 	case '+':
-		tok = newToken(token.PLUS, l.ch)
+		tok = newToken(token.Plus, l.ch)
 	case '-':
-		tok = newToken(token.MINUS, l.ch)
+		tok = newToken(token.Minus, l.ch)
 	case '*':
-		tok = newToken(token.ASTARISK, l.ch)
+		tok = newToken(token.Astarisk, l.ch)
 	case '/':
-		tok = newToken(token.SLASH, l.ch)
+		tok = newToken(token.Slash, l.ch)
 	case '<':
 		if l.peekChar() == '=' {
 			tok = l.readTwoCharToken(token.LE)
@@ -89,22 +89,22 @@ func (l *lexer) NextToken() token.Token {
 		}
 	case '&':
 		if l.peekChar() == '&' {
-			tok = l.readTwoCharToken(token.AND)
+			tok = l.readTwoCharToken(token.And)
 		}
 	case '|':
 		if l.peekChar() == '|' {
-			tok = l.readTwoCharToken(token.OR)
+			tok = l.readTwoCharToken(token.Or)
 		}
 	case '{':
-		tok = newToken(token.LBRACE, l.ch)
+		tok = newToken(token.LBrace, l.ch)
 	case '}':
-		tok = newToken(token.RBRACE, l.ch)
+		tok = newToken(token.RBrace, l.ch)
 	case '[':
-		tok = newToken(token.LBRACKET, l.ch)
+		tok = newToken(token.LBracket, l.ch)
 	case ']':
-		tok = newToken(token.RBRACKET, l.ch)
+		tok = newToken(token.RBracket, l.ch)
 	case '"':
-		tok.Type = token.STRING
+		tok.Type = token.String
 		tok.Literal = l.readString()
 	case 0:
 		tok.Literal = ""
@@ -120,7 +120,7 @@ func (l *lexer) NextToken() token.Token {
 			return tok
 		}
 
-		tok = newToken(token.ILLEGAL, l.ch)
+		tok = newToken(token.Illegal, l.ch)
 	}
 
 	l.readChar()
@@ -187,7 +187,7 @@ func (l *lexer) readNumberToken() token.Token {
 	intPart := l.readNumber()
 	if l.ch != '.' {
 		return token.Token{
-			Type:    token.INT,
+			Type:    token.Int,
 			Literal: intPart,
 		}
 	}
@@ -195,7 +195,7 @@ func (l *lexer) readNumberToken() token.Token {
 	l.readChar()
 	fracPart := l.readNumber()
 	return token.Token{
-		Type:    token.FLOAT,
+		Type:    token.Float,
 		Literal: intPart + "." + fracPart,
 	}
 }

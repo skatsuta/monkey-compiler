@@ -4,32 +4,30 @@ package token
 type Type string
 
 const (
-	// ILLEGAL is a token type for illegal tokens.
-	ILLEGAL Type = "ILLEGAL"
+	// Illegal is a token type for illegal tokens.
+	Illegal Type = "Illegal"
 	// EOF is a token type that represents end of file.
 	EOF = "EOF"
 
-	// IDENT is a token type for identifiers.
-	IDENT = "IDENT" // add, foobar, x, y, ...
-	// INT is a token type for integers.
-	INT = "INT"
-	// FLOAT is a token type for floating point numbers.
-	FLOAT = "FLOAT"
-	// STRING is a token type for strings.
-	STRING = "STRING"
+	// Ident is a token type for identifiers.
+	Ident = "Ident" // add, foobar, x, y, ...
+	// Int is a token type for integers.
+	Int = "Int"
+	// Float is a token type for floating point numbers.
+	Float = "Float"
+	// String is a token type for strings.
+	String = "String"
 
-	// BANG is a token type for NOT operator.
-	BANG = "!"
-	// ASSIGN is a token type for assignment operators.
-	ASSIGN = "="
-	// PLUS is a token type for addition.
-	PLUS = "+"
-	// MINUS is a token type for subtraction.
-	MINUS = "-"
-	// ASTARISK is a token type for multiplication.
-	ASTARISK = "*"
-	// SLASH is a token type for division.
-	SLASH = "/"
+	// Bang is a token type for NOT operator.
+	Bang = "!"
+	// Plus is a token type for addition.
+	Plus = "+"
+	// Minus is a token type for subtraction.
+	Minus = "-"
+	// Astarisk is a token type for multiplication.
+	Astarisk = "*"
+	// Slash is a token type for division.
+	Slash = "/"
 	// LT is a token ype for 'less than' operator.
 	LT = "<"
 	// GT is a token ype for 'greater than' operator.
@@ -38,53 +36,55 @@ const (
 	LE = "<="
 	// GE is a token type for 'greater than or equal to' operator.
 	GE = ">="
-	// EQ is a token type for equality operator.
-	EQ = "=="
-	// NEQ is a token type for not equality operator.
-	NEQ = "!="
-	// AND is a token type for binary AND logical operator.
-	AND = "&&"
-	// OR is a token type for binary OR logical operator.
-	OR = "||"
+	// Eq is a token type for equality operator.
+	Eq = "=="
+	// NEq is a token type for not equality operator.
+	NEq = "!="
+	// And is a token type for binary And logical operator.
+	And = "&&"
+	// Or is a token type for binary Or logical operator.
+	Or = "||"
+	// Assign is a token type for assignment operators.
+	Assign = "="
 
-	// COMMA is a token type for commas.
-	COMMA = ","
-	// SEMICOLON is a token type for semicolons.
-	SEMICOLON = ";"
-	// COLON is a token type for colons.
-	COLON = ":"
+	// Comma is a token type for commas.
+	Comma = ","
+	// Semicolon is a token type for semicolons.
+	Semicolon = ";"
+	// Colon is a token type for colons.
+	Colon = ":"
 
-	// LPAREN is a token type for left parentheses.
-	LPAREN = "("
-	// RPAREN is a token type for right parentheses.
-	RPAREN = ")"
-	// LBRACE is a token type for left braces.
-	LBRACE = "{"
-	// RBRACE is a token type for right braces.
-	RBRACE = "}"
-	// LBRACKET is a token type for left brackets.
-	LBRACKET = "["
-	// RBRACKET is a token type for right brackets.
-	RBRACKET = "]"
+	// LParen is a token type for left parentheses.
+	LParen = "("
+	// RParen is a token type for right parentheses.
+	RParen = ")"
+	// LBrace is a token type for left braces.
+	LBrace = "{"
+	// RBrace is a token type for right braces.
+	RBrace = "}"
+	// LBracket is a token type for left brackets.
+	LBracket = "["
+	// RBracket is a token type for right brackets.
+	RBracket = "]"
 
-	// FUNCTION is a token type for functions.
-	FUNCTION = "FUNCTION"
-	// LET is a token type for lets.
-	LET = "LET"
-	// TRUE is a token type for true.
-	TRUE = "TRUE"
-	// FALSE is a token type for false.
-	FALSE = "FALSE"
-	// NIL is a token type for nil.
-	NIL = "NIL"
-	// IF is a token type for if.
-	IF = "IF"
-	// ELSE is a token type for else.
-	ELSE = "ELSE"
-	// RETURN is a token type for return.
-	RETURN = "RETURN"
-	// MACRO is a token type for macros.
-	MACRO = "MACRO"
+	// Function is a token type for functions.
+	Function = "Function"
+	// Let is a token type for lets.
+	Let = "Let"
+	// True is a token type for true.
+	True = "True"
+	// False is a token type for false.
+	False = "False"
+	// Nil is a token type for nil.
+	Nil = "Nil"
+	// If is a token type for if.
+	If = "If"
+	// Else is a token type for else.
+	Else = "Else"
+	// Return is a token type for return.
+	Return = "Return"
+	// Macro is a token type for macros.
+	Macro = "Macro"
 )
 
 // Token represents a token which has a token type and literal.
@@ -95,15 +95,15 @@ type Token struct {
 
 // Language keywords
 var keywords = map[string]Type{
-	"fn":     FUNCTION,
-	"let":    LET,
-	"true":   TRUE,
-	"false":  FALSE,
-	"nil":    NIL,
-	"if":     IF,
-	"else":   ELSE,
-	"return": RETURN,
-	"macro":  MACRO,
+	"fn":     Function,
+	"let":    Let,
+	"true":   True,
+	"false":  False,
+	"nil":    Nil,
+	"if":     If,
+	"else":   Else,
+	"return": Return,
+	"macro":  Macro,
 }
 
 // LookupIdent checks the language keywords to see whether the given identifier is a keyword.
@@ -112,5 +112,5 @@ func LookupIdent(ident string) Type {
 	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
-	return IDENT
+	return Ident
 }
