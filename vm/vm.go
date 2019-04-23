@@ -364,7 +364,8 @@ func (vm *VM) buildArray(startIdx, endIdx int) object.Object {
 }
 
 func (vm *VM) buildHash(startIdx, endIdx int) (object.Object, error) {
-	m := make(map[object.HashKey]object.HashPair)
+	capacity := (endIdx - startIdx) / 2
+	m := make(map[object.HashKey]object.HashPair, capacity)
 
 	for i := startIdx; i < endIdx; i += 2 {
 		key := vm.stack[i]
