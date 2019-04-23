@@ -34,7 +34,7 @@ type VM struct {
 	consts []object.Object
 
 	stack []object.Object
-	// Stackpointer always points to the *next* value. Top of stack is `stack[sp-1]`.
+	// Stack pointer always points to the *next* slot on the stack. Top of stack is stack[sp-1].
 	sp int
 
 	// globals store
