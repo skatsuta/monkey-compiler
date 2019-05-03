@@ -47,6 +47,11 @@ func TestNextToken(t *testing.T) {
 
 	a = 2;
 	b = nil;
+	c = 1;
+	c += 2;
+	c -= 3;
+	c *= 4;
+	c /= 5;
 
 	macro(x, y) { x + y; };
 	`
@@ -187,6 +192,26 @@ func TestNextToken(t *testing.T) {
 		{token.Ident, "b"},
 		{token.Assign, "="},
 		{token.Nil, "nil"},
+		{token.Semicolon, ";"},
+		{token.Ident, "c"},
+		{token.Assign, "="},
+		{token.Int, "1"},
+		{token.Semicolon, ";"},
+		{token.Ident, "c"},
+		{token.AddAssign, "+="},
+		{token.Int, "2"},
+		{token.Semicolon, ";"},
+		{token.Ident, "c"},
+		{token.SubAssign, "-="},
+		{token.Int, "3"},
+		{token.Semicolon, ";"},
+		{token.Ident, "c"},
+		{token.MulAssign, "*="},
+		{token.Int, "4"},
+		{token.Semicolon, ";"},
+		{token.Ident, "c"},
+		{token.DivAssign, "/="},
+		{token.Int, "5"},
 		{token.Semicolon, ";"},
 		{token.Macro, "macro"},
 		{token.LParen, "("},

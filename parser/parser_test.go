@@ -6,6 +6,7 @@ import (
 
 	"github.com/skatsuta/monkey-compiler/ast"
 	"github.com/skatsuta/monkey-compiler/lexer"
+	"github.com/skatsuta/monkey-compiler/token"
 )
 
 func TestLetStatements(t *testing.T) {
@@ -86,15 +87,24 @@ func TestAssignmentStatements(t *testing.T) {
 	tests := []struct {
 		input         string
 		expectedIdent string
+		expectedOp    token.Type
 		expectedValue interface{}
 	}{
-		{"x = 5;", "x", 5},
-		{"y = true;", "y", true},
-		{"foobar = y;", "foobar", "y"},
-		{"x = 5; x = 6;", "x", 6},
-		{"a = 5.5; b = 6.6;", "b", 6.6},
-		{"y = true; y = false;", "y", false},
-		{"foobar = y; foobar = z;", "foobar", "z"},
+		{"x = 5;", "x", token.Assign, 5},
+		{"y = true;", "y", token.Assign, true},
+		{"foobar = y;", "foobar", token.Assign, "y"},
+		{"x = 5; x = 6;", "x", token.Assign, 6},
+		{"a = 5.5; b = 6.6;", "b", token.Assign, 6.6},
+		{"y = true; y = false;", "y", token.Assign, false},
+		{"foobar = y; foobar = z;", "foobar", token.Assign, "z"},
+		{"x += 5", "x", token.AddAssign, 5},
+		{"x -= 5", "x", token.SubAssign, 5},
+		{"x *= 5", "x", token.MulAssign, 5},
+		{"x /= 5", "x", token.DivAssign, 5},
+		{"x += 5.5", "x", token.AddAssign, 5.5},
+		{"x -= 5.5", "x", token.SubAssign, 5.5},
+		{"x *= 5.5", "x", token.MulAssign, 5.5},
+		{"x /= 5.5", "x", token.DivAssign, 5.5},
 	}
 
 	for _, tt := range tests {
@@ -112,14 +122,14 @@ func TestAssignmentStatements(t *testing.T) {
 
 		// Check the last statement
 		stmt := program.Statements[l-1]
-		testAssignmentStatement(t, stmt, tt.expectedIdent)
+		testAssignmentStatement(t, stmt, tt.expectedIdent, tt.expectedOp)
 
 		val := stmt.(*ast.AssignStatement).RHS
 		testLiteralExpression(t, val, tt.expectedValue)
 	}
 }
 
-func testAssignmentStatement(t *testing.T, s ast.Statement, name string) {
+func testAssignmentStatement(t *testing.T, s ast.Statement, name string, op token.Type) {
 	stmt, ok := s.(*ast.AssignStatement)
 	if !ok {
 		t.Errorf("statement not *ast.AssignmentStatement. got=%T", s)
@@ -136,6 +146,10 @@ func testAssignmentStatement(t *testing.T, s ast.Statement, name string) {
 
 	if got := ident.TokenLiteral(); got != name {
 		t.Errorf("stmt.Name not %q. got=%q", name, got)
+	}
+
+	if got := stmt.Token.Type; got != op {
+		t.Errorf("expected operator to be %q, but got %q", op, got)
 	}
 }
 

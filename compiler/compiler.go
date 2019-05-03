@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
@@ -120,6 +121,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 
 			c.emit(code.OpSetIndex)
+
+		default:
+			return errors.New("invalid assignment")
 		}
 
 	case *ast.ReturnStatement:

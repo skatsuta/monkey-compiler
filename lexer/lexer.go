@@ -68,13 +68,29 @@ func (l *lexer) NextToken() token.Token {
 	case ',':
 		tok = newToken(token.Comma, l.ch)
 	case '+':
-		tok = newToken(token.Plus, l.ch)
+		if l.peekChar() == '=' {
+			tok = l.readTwoCharToken(token.AddAssign)
+		} else {
+			tok = newToken(token.Plus, l.ch)
+		}
 	case '-':
-		tok = newToken(token.Minus, l.ch)
+		if l.peekChar() == '=' {
+			tok = l.readTwoCharToken(token.SubAssign)
+		} else {
+			tok = newToken(token.Minus, l.ch)
+		}
 	case '*':
-		tok = newToken(token.Astarisk, l.ch)
+		if l.peekChar() == '=' {
+			tok = l.readTwoCharToken(token.MulAssign)
+		} else {
+			tok = newToken(token.Astarisk, l.ch)
+		}
 	case '/':
-		tok = newToken(token.Slash, l.ch)
+		if l.peekChar() == '=' {
+			tok = l.readTwoCharToken(token.DivAssign)
+		} else {
+			tok = newToken(token.Slash, l.ch)
+		}
 	case '<':
 		if l.peekChar() == '=' {
 			tok = l.readTwoCharToken(token.LE)

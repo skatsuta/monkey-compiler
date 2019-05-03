@@ -215,10 +215,10 @@ func (p *Parser) parseSimpleStatement() (stmt ast.Statement) {
 	lhs := p.parseExpression(LOWEST)
 
 	switch p.peekToken.Type {
-	case token.Assign:
+	case token.Assign, token.AddAssign, token.SubAssign, token.MulAssign, token.DivAssign:
 		p.nextToken()
 
-		tok := p.curToken // Equal sign '='
+		tok := p.curToken
 
 		p.nextToken()
 

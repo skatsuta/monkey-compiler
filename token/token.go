@@ -46,6 +46,14 @@ const (
 	Or = "||"
 	// Assign is a token type for assignment operators.
 	Assign = "="
+	// AddAssign is a token type for assignment with addition.
+	AddAssign = "+="
+	// SubAssign is a token type for assignment with subtraction.
+	SubAssign = "-="
+	// MulAssign is a token type for assignment with multiplication.
+	MulAssign = "*="
+	// DivAssign is a token type for assignment with division.
+	DivAssign = "/="
 
 	// Comma is a token type for commas.
 	Comma = ","
